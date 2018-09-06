@@ -1,0 +1,30 @@
+{
+  "name": "TTFCC",
+  "version": "1.0.0",
+  "description": "Test tool for check chromium code.",
+  "main": "./src/main.js",
+  "scripts": {
+    "start": "node ./src/main.js"
+  },
+  "directories": {
+    "output": "output",
+    "baseline": "baseline",
+    "src": "src"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "fast-csv": "^2.4.1",
+    "selenium-webdriver": "^4.0.0-alpha.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cuiyanx/TTFCC.git"
+  },
+  "keywords": [],
+  "author": "yanx.cui@intel.com",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/cuiyanx/TTFCC/issues"
+  },
+  "homepage": "https://github.com/cuiyanx/TTFCC#readme"
+}

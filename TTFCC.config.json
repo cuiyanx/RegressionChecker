@@ -1,0 +1,4 @@
+{
+    "andriod": false,
+    "chromiumPath": "./chromium-mac/Chromium.app/Contents/MacOS/Chromium"
+}
