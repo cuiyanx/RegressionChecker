@@ -300,7 +300,7 @@ function TTFCClog (target, message) {
 
         if (backendModel === "Mac-MPS") {
             if (platformRun === "Mac") {
-                remoteURL = "https://brucedai.github.io/nt/testa/index-local.html?backend=mps";
+                remoteURL = "https://brucedai.github.io/nt/testm/index-local.html?backend=mps";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML");
@@ -309,7 +309,7 @@ function TTFCClog (target, message) {
             }
         } else if (backendModel === "Mac-BNNS") {
             if (platformRun === "Mac") {
-                remoteURL = "https://brucedai.github.io/nt/testa/index-local.html?backend=bnns";
+                remoteURL = "https://brucedai.github.io/nt/testm/index-local.html?backend=bnns";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML");
