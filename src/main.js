@@ -54,7 +54,7 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
 var csvFilePath = outputPath + "/report-check-result.csv";
 csvStream.pipe(fs.createWriteStream(csvFilePath));
 
-var remoteURL, driver, flagPending, checkModuleTmp, backendModel;
+var remoteURL, driver, backendModel;
 var backendModels = [
     "Mac-MPS",
     "Mac-BNNS",
@@ -80,7 +80,6 @@ var totalFail = null;
 var checkTitle = null;
 var checkModule = null;
 var checkName = null;
-var checkCaseStatus = null;
 
 var baseLineData = new Map();
 var writeCSVData = new Map();
@@ -88,6 +87,9 @@ var writeCSVData = new Map();
 csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
     baseLineData.set(data[1], new Map(
         [
+            ["Feature", data[0]],
+            ["CaseId", data[1]],
+            ["TestCase", data[2]],
             ["Mac-MPS", data[3]],
             ["Mac-BNNS", data[4]],
             ["Mac-WASM", data[5]],
@@ -118,78 +120,38 @@ function TTFCClog (target, message) {
 (async function() {
     TTFCClog("console", "checking chromium code is start");
 
-    var getName = async function(element) {
-        let Text = null;
-        let length = 0;
-        await element.findElement(By.xpath("./h2")).getText().then(function(message) {
-            length = message.length - 1;
-            Text = message;
-        });
-
-        let arrayElement = await element.findElements(By.xpath("./h2/child::*"));
-        for (let j = 1; j <= arrayElement.length; j++) {
-            await arrayElement[j - 1].getText().then(function(message) {
-                length = length - message.length;
-            });
-        }
-
-        if (flagPending) {
-            return Text;
-        } else {
-            return Text.slice(0, length);
-        }
-    }
-
-    var getInfo = async function(element) {
-        let array = await element.findElements(By.xpath("./ul/li[@class='test pass fast' or " +
-                                                        "@class='test pass slow' or " +
-                                                        "@class='test fail' or " +
-                                                        "@class='test pass pending' or " +
-                                                        "@class='test pass medium']"));
-
-        for (let i = 1; i <= array.length; i++) {
-            await array[i - 1].getAttribute("class").then(function(message) {
-                flagPending = false;
-
-                if (message == "test pass pending") {
-                    flagPending = true;
-                    checkCaseStatus = "N/A";
-                } else if (message == "test pass fast" || message == "test pass slow" || message == "test pass medium") {
-                    checkCaseStatus = "Pass";
-                } else if (message == "test fail") {
-                    checkCaseStatus = "Fail";
-                } else {
-                    throw new Error("not support case status");
-                }
-            });
-
-            await getName(array[i - 1]).then(function(message) {
-                checkName = message;
-            });
-
-            if (checkModuleTmp == null) {
-                checkModuleTmp = checkTitle;
+    var getInfo = async function(element, count, title, module) {
+        return element.getAttribute("class").then(function(message) {
+            let checkCaseStatus = null;
+            if (message == "test pass pending") {
+                checkCaseStatus = "N/A";
+            } else if (message == "test pass fast" || message == "test pass slow" || message == "test pass medium") {
+                checkCaseStatus = "Pass";
+            } else if (message == "test fail") {
+                checkCaseStatus = "Fail";
+            } else {
+                throw new Error("not support case status");
             }
 
-            checkModule = checkModuleTmp + "/" + i;
+            module = module + "/" + count;
 
-            TTFCClog("debug", "'Feature': " + checkTitle);
-            TTFCClog("debug", "'Case Id': " + checkModule);
-            TTFCClog("debug", "'Case Name': " + checkName);
-            TTFCClog("debug", "'Case Status': " + checkCaseStatus);
+            TTFCClog("debug", "'Feature': " + title);
+            TTFCClog("debug", "'Case Id': " + module);
+            TTFCClog("debug", "'Case Status': " + checkCaseStatus + "\n");
 
-            let resultFlag = await checkResult(backendModel, checkModule, checkCaseStatus);
+            let resultFlag = checkResult(backendModel, module, checkCaseStatus);
             if (resultFlag) {
-                if (!writeCSVData.has(checkModule)) {
-                    writeCSVData.set(checkModule, new Array());
+                if (!writeCSVData.has(module)) {
+                    writeCSVData.set(module, new Array());
 
-                    writeCSVData.get(checkModule)["Feature"] = checkTitle;
-                    writeCSVData.get(checkModule)["CaseId"] = checkModule;
-                    writeCSVData.get(checkModule)["TestCase"] = checkName;
+                    writeCSVData.get(module)["Feature"] = title;
+                    writeCSVData.get(module)["CaseId"] = module;
+                    writeCSVData.get(module)["TestCase"] = baseLineData.get(module).get("TestCase");
                 }
 
-                let DataArray = writeCSVData.get(checkModule);
-                let baseLineStatus = baseLineData.get(checkModule).get(backendModel);
+                let DataArray = writeCSVData.get(module);
+                let baseLineStatus = baseLineData.get(module).get(backendModel);
+                let name = baseLineData.get(module).get("TestCase");
 
                 switch(backendModel) {
                     case "Mac-MPS":
@@ -242,33 +204,74 @@ function TTFCClog (target, message) {
                         break;
                 }
 
-                TTFCClog("console", checkTitle + " - " + checkModule + " - " + checkName);
+                TTFCClog("console", title + " - " + module + " - " + name);
                 TTFCClog("console", checkCaseStatus + " : " + baseLineStatus);
             }
-        }
+        });
     }
 
     var graspResult = async function() {
-        let arrayTitles = await driver.findElements(By.xpath("//ul[@id='mocha-report']/li[@class='suite']"));
-        for (let i = 1; i <= arrayTitles.length; i++) {
-            await arrayTitles[i - 1].findElement(By.xpath("./h1/a")).getText().then(function(message) {
-                checkTitle = message;
-                checkModuleTmp = null;
-                checkModule = null;
-            });
+        await driver.findElements(By.xpath("//ul[@id='mocha-report']/li[@class='suite']")).then(function(arrayTitles) {
+            for (let i = 0; i < arrayTitles.length; i++) {
+                arrayTitles[i].findElement(By.xpath("./h1/a")).getText().then(function(message) {
+                    let title = message;
 
-            let arrayModule = await arrayTitles[i - 1].findElements(By.xpath("./ul/li[@class='suite']"));
-            for (let j = 1; j <= arrayModule.length; j++) {
-                await arrayModule[j - 1].findElement(By.xpath("./h1/a")).getText().then(function(message) {
-                    let array = message.split("#");
-                    checkModuleTmp = array[1];
+                    arrayTitles[i].findElements(By.xpath("./ul/li[@class='suite']")).then(function(arrayModules) {
+                        if (arrayModules.length === 0) {
+                            let module = title;
+
+                            arrayTitles[i].findElements(By.xpath("./ul/li[@class='test pass fast' or " +
+                                                                 "@class='test pass slow' or " +
+                                                                 "@class='test fail' or " +
+                                                                 "@class='test pass pending' or " +
+                                                                 "@class='test pass medium']")).then(async function(arrayCase) {
+                                TTFCClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
+
+                                for (let k = 0; k < arrayCase.length; k++) {
+                                    await getInfo(arrayCase[k], k + 1, title, module).then(function() {
+                                        actions = actions + 1;
+                                    });
+                                }
+
+                            });
+                        } else {
+                            for (let j = 0; j < arrayModules.length; j++) {
+                                arrayModules[j].findElement(By.xpath("./h1/a")).getText().then(function(message) {
+                                    let module = message.split("#")[1];
+
+                                    arrayModules[j].findElements(By.xpath("./ul/li[@class='test pass fast' or " +
+                                                                          "@class='test pass slow' or " +
+                                                                          "@class='test fail' or " +
+                                                                          "@class='test pass pending' or " +
+                                                                          "@class='test pass medium']")).then(async function(arrayCase) {
+                                        TTFCClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
+
+                                        for (let k = 0; k < arrayCase.length; k++) {
+                                            await getInfo(arrayCase[k], k + 1, title, module).then(function() {
+                                                actions = actions + 1;
+                                            });
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    });
                 });
+            }
+        });
 
-                await getInfo(arrayModule[j - 1]);
+        let actions = 0;
+        let actionCount = 0;
+        await driver.wait(function() {
+            if (actionCount != actions) {
+                actionCount = actions;
+                TTFCClog("debug", ((totalPass >> 0) + (totalFail >> 0)) + " : " + actionCount);
             }
 
-            await getInfo(arrayTitles[i - 1]);
-        }
+            return (actions == ((totalPass >> 0) + (totalFail >> 0)));
+        }, 500000).catch(function() {
+            throw new Error("failed to grasp all test result");
+        });
     }
 
     var graspTotal = async function() {
@@ -283,7 +286,7 @@ function TTFCClog (target, message) {
         });
     }
 
-    var checkResult = async function(backend, caseId, statusCheck) {
+    var checkResult = function(backend, caseId, statusCheck) {
         if (!baseLineData.has(caseId)) {
             throw new Error("no match test case: " + caseId);
         } else {
@@ -417,6 +420,7 @@ function TTFCClog (target, message) {
 
         await graspResult();
 
+        await driver.sleep(2000);
         await driver.close();
         await driver.sleep(2000);
 
