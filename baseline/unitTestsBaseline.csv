@@ -1,4 +1,4 @@
-Feature,Case Id,Test Case,Mac-MPS,Mac-BNNS,Mac-WASM,Mac-WebGL2,Android-NNAPI, Android-WASM,Android-WebGL2,Windows-clDNN,Windows-WASM,Windows-WebGL2,Linux-WASM,Linux-WebGL2
+Feature,Case Id,Test Case,Mac-MPS,Mac-BNNS,Mac-WASM,Mac-WebGL2,Android-NNAPI,Android-WASM,Android-WebGL2,Windows-clDNN,Windows-WASM,Windows-WebGL2,Linux-WASM,Linux-WebGL2
 Unit Test/Base Test,Unit Test/Base Test/1,check namespace,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Base Test,Unit Test/Base Test/2,check getNeuralNetworkContext,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperand API/1,"check ""addOperand"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
