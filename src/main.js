@@ -665,6 +665,9 @@ function TTFCClog (target, message) {
         } else if (backendModel === "Linux-WASM") {
             if (platformRun === "Linux") {
                 testBackends.push("Linux-WASM");
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--disable-features=WebML");
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
             } else {
                 continue;
@@ -672,6 +675,9 @@ function TTFCClog (target, message) {
         } else if (backendModel === "Linux-WebGL2") {
             if (platformRun === "Linux") {
                 testBackends.push("Linux-WebGL2");
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--disable-features=WebML");
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
             } else {
                 continue;
