@@ -57,7 +57,7 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
 var csvFilePath = outputPath + "/report-check-result.csv";
 csvStream.pipe(fs.createWriteStream(csvFilePath));
 
-var remoteURL, driver, backendModel;
+var remoteURL, driver, backendModel, chromeOption;
 var backendModels = [
     "Mac-MPS",
     "Mac-BNNS",
@@ -76,7 +76,6 @@ var backendModels = [
 var TTFCCjson = JSON.parse(fs.readFileSync("./TTFCC.config.json"));
 var andriodFlag = TTFCCjson.andriod;
 var chromiumPath = TTFCCjson.chromiumPath;
-var chromeOption = new Chrome.Options();
 
 var baselinejson = JSON.parse(fs.readFileSync("./baseline/baseline.config.json"));
 var versionChromium = baselinejson.Version.chromium;
@@ -562,6 +561,7 @@ function TTFCClog (target, message) {
     }
 
     for (let i = 0; i < backendModels.length; i++) {
+        chromeOption = new Chrome.Options();
         backendModel = backendModels[i];
         graspData["total"] = 0;
         graspData["pass"] = 0;
@@ -738,7 +738,7 @@ function TTFCClog (target, message) {
         pageDataTotal.get(backendModel).get("grasp").push(Math.round((graspData["pass"] / graspData["total"]) * 100).toString() + "%");
 
         await driver.sleep(2000);
-        await driver.close();
+        await driver.quit();
         await driver.sleep(2000);
 
         TTFCClog("console", "checking with '" + backendModel + "' backend is completed");
@@ -752,9 +752,6 @@ function TTFCClog (target, message) {
 
     htmlStream.end();
     csvStream.end();
-
-    await driver.quit();
-    await driver.sleep(2000);
 
     driver = new Builder()
         .forBrowser("chrome")

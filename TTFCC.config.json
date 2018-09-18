@@ -1,4 +1,4 @@
 {
-    "andriod": false,
-    "chromiumPath": "./chromium-mac/Chromium.app/Contents/MacOS/Chromium"
+    "andriod": true,
+    "chromiumPath": "/usr/bin/chromium-browser-unstable"
 }
