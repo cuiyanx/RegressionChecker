@@ -102,7 +102,7 @@ var crashData = new Array();
 var graspData = new Array();
 
 csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
-    baseLineData.set(data[1], new Map(
+    baseLineData.set(data[0] + "-" + data[1], new Map(
         [
             ["Feature", data[0]],
             ["CaseId", data[1]],
@@ -161,19 +161,19 @@ function TTFCClog (target, message) {
             TTFCClog("debug", "'Case Id': " + module);
             TTFCClog("debug", "'Case Status': " + checkCaseStatus + "\n");
 
-            let resultFlag = checkResult(backendModel, module, checkCaseStatus);
+            let resultFlag = checkResult(backendModel, title, module, checkCaseStatus);
             if (resultFlag) {
-                if (!writeCSVData.has(module)) {
-                    writeCSVData.set(module, new Array());
+                if (!writeCSVData.has(title + "-" + module)) {
+                    writeCSVData.set(title + "-" + module, new Array());
 
-                    writeCSVData.get(module)["Feature"] = title;
-                    writeCSVData.get(module)["CaseId"] = module;
-                    writeCSVData.get(module)["TestCase"] = baseLineData.get(module).get("TestCase");
+                    writeCSVData.get(title + "-" + module)["Feature"] = title;
+                    writeCSVData.get(title + "-" + module)["CaseId"] = module;
+                    writeCSVData.get(title + "-" + module)["TestCase"] = baseLineData.get(title + "-" + module).get("TestCase");
                 }
 
-                let DataArray = writeCSVData.get(module);
-                let baseLineStatus = baseLineData.get(module).get(backendModel);
-                let name = baseLineData.get(module).get("TestCase");
+                let DataArray = writeCSVData.get(title + "-" + module);
+                let baseLineStatus = baseLineData.get(title + "-" + module).get(backendModel);
+                let name = baseLineData.get(title + "-" + module).get("TestCase");
 
                 switch(backendModel) {
                     case "Mac-MPS":
@@ -302,7 +302,8 @@ function TTFCClog (target, message) {
         });
     }
 
-    var checkResult = function(backend, caseId, statusCheck) {
+    var checkResult = function(backend, title, module, statusCheck) {
+        let caseId = title + "-" + module;
         if (!baseLineData.has(caseId)) {
             throw new Error("no match test case: " + caseId);
         } else {
