@@ -3,6 +3,7 @@ const By = require("../node_modules/selenium-webdriver").By;
 const until = require("../node_modules/selenium-webdriver").until;
 const Chrome = require("../node_modules/selenium-webdriver/chrome");
 const csv = require("../node_modules/fast-csv");
+const execSync = require("child_process").execSync;
 const fs = require("fs");
 const os = require("os");
 
@@ -57,7 +58,7 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
 var csvFilePath = outputPath + "/report-check-result.csv";
 csvStream.pipe(fs.createWriteStream(csvFilePath));
 
-var remoteURL, driver, backendModel, chromeOption;
+var remoteURL, driver, backendModel, chromeOption, command;
 var backendModels = [
     "Mac-MPS",
     "Mac-BNNS",
@@ -131,6 +132,82 @@ function TTFCClog (target, message) {
         if (debugFlag) console.log("TTFCC -- " + message);
     } else {
         throw new Error("Not support target '" + target + "'");
+    }
+}
+
+TTFCClog("console", "checking runtime environment....");
+
+if (andriodFlag) {
+    TTFCClog("console", "runtime environment: android");
+
+    try {
+        command = "adb devices";
+        let log = execSync(command, {encoding: "UTF-8", stdio: "pipe"}).split(/\s+/);
+
+        let array = new Array();
+        for (let i = 0; i < log.length; i++) {
+            if (log[i] == "device") array.push(log[i - 1]);
+        }
+
+        if (array.length == 0) {
+            throw new Error("no android device");
+        } else if (array.length > 1) {
+            throw new Error("more android device");
+        } else {
+            TTFCClog("console", "android device: " + array[0]);
+        }
+    } catch(e) {
+        throw e;
+    }
+
+    try {
+        command = "adb shell pm list packages | grep org.chromium.chrome";
+        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+        TTFCClog("console", "chromium to be tested is installed correctly");
+    } catch(e) {
+        throw new Error("chromium to be tested is not installed correctly");
+    }
+
+    command = "adb shell am force-stop com.android.chrome";
+    execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+
+    command = "adb shell am force-stop org.chromium.chrome";
+    execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+}
+
+if (platformRun == "Linux") {
+    TTFCClog("console", "runtime environment: Linux");
+
+    if (fs.existsSync(chromiumPath)) {
+        TTFCClog("console", "chromium to be tested is installed correctly");
+    } else {
+        throw new Error("chromium to be tested is not installed correctly");
+    }
+
+    try {
+        command = "killall chrome";
+        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+    } catch(e) {
+        if (!e.message.search("no process found")) {
+            throw e;
+        }
+    }
+} else if (platformRun == "Mac") {
+    TTFCClog("console", "runtime environment: Mac");
+
+    if (fs.existsSync(chromiumPath)) {
+        TTFCClog("console", "chromium to be tested is installed correctly");
+    } else {
+        throw new Error("chromium to be tested is not installed correctly");
+    }
+
+    try {
+        command = "killall Chromium";
+        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+    } catch(e) {
+        if (!e.message.search("No matching processes")) {
+            throw e;
+        }
     }
 }
 
@@ -755,7 +832,7 @@ function TTFCClog (target, message) {
 
     driver = new Builder()
         .forBrowser("chrome")
-        .setChromeOptions(new Chrome.Options())
+        .setChromeOptions(new Chrome.Options().setChromeBinaryPath(chromiumPath))
         .build();
 
     await driver.get("file://" + process.cwd() + "/output/report-check-result.html");
