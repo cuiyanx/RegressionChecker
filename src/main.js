@@ -58,7 +58,7 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
 var csvFilePath = outputPath + "/report-check-result.csv";
 csvStream.pipe(fs.createWriteStream(csvFilePath));
 
-var remoteURL, driver, backendModel, chromeOption, command;
+var remoteURL, driver, backendModel, chromeOption, command, androidSN;
 var backendModels = [
     "Mac-MPS",
     "Mac-BNNS",
@@ -152,8 +152,10 @@ if (andriodFlag) {
         if (array.length == 0) {
             throw new Error("no android device");
         } else if (array.length > 1) {
-            throw new Error("more android device");
+            androidSN = array[0];
+            TTFCClog("console", "more android devices, using the first one: " + array[0]);
         } else {
+            androidSN = array[0];
             TTFCClog("console", "android device: " + array[0]);
         }
     } catch(e) {
@@ -161,17 +163,17 @@ if (andriodFlag) {
     }
 
     try {
-        command = "adb shell pm list packages | grep org.chromium.chrome";
+        command = "adb -s " + androidSN + " shell pm list packages | grep org.chromium.chrome";
         execSync(command, {encoding: "UTF-8", stdio: "pipe"});
         TTFCClog("console", "chromium to be tested is installed correctly");
     } catch(e) {
         throw new Error("chromium to be tested is not installed correctly");
     }
 
-    command = "adb shell am force-stop com.android.chrome";
+    command = "adb -s " + androidSN + " shell am force-stop com.android.chrome";
     execSync(command, {encoding: "UTF-8", stdio: "pipe"});
 
-    command = "adb shell am force-stop org.chromium.chrome";
+    command = "adb -s " + androidSN + " shell am force-stop org.chromium.chrome";
     execSync(command, {encoding: "UTF-8", stdio: "pipe"});
 }
 
@@ -203,6 +205,15 @@ if (platformRun == "Linux") {
 
     try {
         command = "killall Chromium";
+        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+    } catch(e) {
+        if (!e.message.search("No matching processes")) {
+            throw e;
+        }
+    }
+
+    try {
+        command = "killall 'Google Chrome'";
         execSync(command, {encoding: "UTF-8", stdio: "pipe"});
     } catch(e) {
         if (!e.message.search("No matching processes")) {
@@ -692,7 +703,8 @@ if (platformRun == "Linux") {
                 remoteURL = "https://brucedai.github.io/nt/testa/index-local.html";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
-                    .addArguments("--enable-features=WebML");
+                    .addArguments("--enable-features=WebML")
+                    .androidDeviceSerial(androidSN);
             } else {
                 continue;
             }
@@ -702,7 +714,8 @@ if (platformRun == "Linux") {
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
-                    .addArguments("--disable-features=WebML");
+                    .addArguments("--disable-features=WebML")
+                    .androidDeviceSerial(androidSN);
             } else {
                 continue;
             }
@@ -712,7 +725,8 @@ if (platformRun == "Linux") {
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
-                    .addArguments("--disable-features=WebML");
+                    .addArguments("--disable-features=WebML")
+                    .androidDeviceSerial(androidSN);
             } else {
                 continue;
             }
