@@ -418,7 +418,7 @@ if (platformRun == "Linux") {
     .tab-box div {display:none;}\n\
     .tab-box div.active {display:block;}\n\
     table {border: 1px solid #ddd; border-spacing:0;}\n\
-    table tr th {border: 1px solid #ddd}\n\
+    table tr th {border: 1px solid #000;background-color: #B0C4DE;}\n\
     table tr td {border: 1px solid #ddd}\n\
     table tr.fail2pass {display:none;}\n\
     .warnning {color:red}\n\
@@ -549,12 +549,19 @@ if (platformRun == "Linux") {
         htmlStream.write(space + "<table>\n");
         htmlStream.write(space + "  <thead>\n");
         htmlStream.write(space + "    <tr>\n");
-        htmlStream.write(space + "      <th>\n");
+        htmlStream.write(space + "      <th rowspan='2'>Summary\n");
         htmlStream.write(space + "      </th>\n");
         for (let i = 0; i < testBackends.length; i++) {
-            htmlStream.write(space + "      <th>Baseline(" + testBackends[i] + ")\n");
+            htmlStream.write(space + "      <th colspan='2'>" + testBackends[i] + "\n");
             htmlStream.write(space + "      </th>\n");
-            htmlStream.write(space + "      <th>" + testBackends[i] + "\n");
+        }
+
+        htmlStream.write(space + "    </tr>\n");
+        htmlStream.write(space + "    <tr>\n");
+        for (let i = 0; i < testBackends.length; i++) {
+            htmlStream.write(space + "      <th>Baseline\n");
+            htmlStream.write(space + "      </th>\n");
+            htmlStream.write(space + "      <th>Grasp\n");
             htmlStream.write(space + "      </th>\n");
         }
 
