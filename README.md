@@ -32,3 +32,7 @@ if testing on android device, need `adb` tool.
 |     :---:     |     :---:    |   :---:   |   :---:   |
 | Ubuntu 16.04  |     pass     |     N/A   |    pass   |
 |      Mac      |      N/A     |    pass   |    pass   |
+
+## Result html
+
+![result-html](./baseline/result-html.jpg)
