@@ -326,6 +326,9 @@ if (platformRun == "Linux") {
     }
 
     var graspResult = async function() {
+        let actions = 0;
+        let actionCount = 0;
+
         await driver.findElements(By.xpath("//ul[@id='mocha-report']/li[@class='suite']")).then(function(arrayTitles) {
             for (let i = 0; i < arrayTitles.length; i++) {
                 arrayTitles[i].findElement(By.xpath("./h1/a")).getText().then(function(message) {
@@ -375,8 +378,6 @@ if (platformRun == "Linux") {
             }
         });
 
-        let actions = 0;
-        let actionCount = 0;
         await driver.wait(function() {
             if (actionCount != actions) {
                 actionCount = actions;
@@ -384,7 +385,8 @@ if (platformRun == "Linux") {
             }
 
             return (actions == baselinejson[backendModel]["total"]);
-        }, 500000).catch(function() {
+        }, 100000).catch(function() {
+            TTFCClog("console", "total: " + baselinejson[backendModel]["total"] + " grasp: " + actionCount);
             throw new Error("failed to grasp all test result");
         });
     }
@@ -795,13 +797,19 @@ if (platformRun == "Linux") {
             throw new Error("failed to load web page");
         });
 
-        await driver.sleep(10000);
-
+        let loadString = null;
+        let loadCount = 0;
         await driver.wait(async function() {
-            if (until.elementLocated(By.xpath("//*[@id='mocha-stats']/li[1]/canvas"))) {
-                let pass = await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='passes']//em")).getText() >> 0;
-                let fail = await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='failures']//em")).getText() >> 0;
-                if ((pass + fail) === (baselinejson[backendModel]["total"] - baselinejson[backendModel]["block"])) {
+            if (until.elementLocated(By.xpath("//ul[@id='mocha-stats']/li[@class='duration']"))) {
+                let loadStringTmp = await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='duration']//em")).getText();
+                if (loadStringTmp == loadString) {
+                    loadCount = loadCount + 1;
+                } else {
+                    loadString = loadStringTmp;
+                    loadCount = 0;
+                }
+
+                if (loadCount >= 80) {
                     return true;
                 } else {
                     return false;
@@ -812,7 +820,7 @@ if (platformRun == "Linux") {
         }).catch(function(err) {
             TTFCClog("console", err);
 
-            if (err.message.search("session deleted because of page crash")) {
+            if (err.message.search("session deleted because of page crash") != -1) {
                 continueFlag = true;
                 crashData.push(backendModel);
                 TTFCClog("console", "remote URL is crashed");
@@ -866,5 +874,6 @@ if (platformRun == "Linux") {
 })().then(function() {
     TTFCClog("console", "checking chromium code is completed");
 }).catch(function(err) {
+    driver.quit();
     TTFCClog("console", err);
 });

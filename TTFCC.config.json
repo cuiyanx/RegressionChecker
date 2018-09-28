@@ -1,4 +1,4 @@
 {
-    "andriod": true,
+    "andriod": false,
     "chromiumPath": "/usr/bin/chromium-browser-unstable"
 }
