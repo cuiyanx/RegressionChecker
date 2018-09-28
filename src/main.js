@@ -810,6 +810,8 @@ if (platformRun == "Linux") {
         }, 100000).then(function() {
             TTFCClog("console", "load remote URL is completed, no crash");
         }).catch(function(err) {
+            TTFCClog("console", err);
+
             if (err.message.search("session deleted because of page crash")) {
                 continueFlag = true;
                 crashData.push(backendModel);
