@@ -24,7 +24,7 @@ if testing on android device, need `adb` tool.
 ## Set TTFCC.config.json file
 
 * `andriod`: As *false*, no testing `andriod`, As *true*, testing `andriod`.
-* `chromiumPath`: Path of chromium browser.
+* `chromiumPath`: Path of chromium browser on run platform (mac or linux).
 
 ## Support platform
 
