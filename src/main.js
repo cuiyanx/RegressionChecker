@@ -820,6 +820,10 @@ if (platformRun == "Linux") {
         });
 
         if (continueFlag) {
+            await driver.sleep(2000);
+            await driver.quit();
+            await driver.sleep(2000);
+
             continue;
         }
 
