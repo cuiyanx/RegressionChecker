@@ -213,6 +213,10 @@ if (testPlatform == "Android") {
     TTFCClog("console", "will support Windows platform");
 }
 
+var numberPasstoFail = 0;
+var numberFailtoPass = 0;
+var numberTotal = 0;
+
 (async function() {
     TTFCClog("console", "checking chromium code is start");
 
@@ -399,10 +403,12 @@ if (testPlatform == "Android") {
         let htmlDataHead = "\
   <head>\n\
     <meta charset='utf-8'>\n\
-    <title>Summary by PR Submission Criteria Checking</title>\n\
+    <title>PR Submission Checking Summary</title>\n\
     <style>\n\
     h2 {text-align:center}\n\
     .container {margin: 20px 20px}\n\
+    .suggest {color:green}\n\
+    .notsuggest {color:red}\n\
     .tab-menu {margin: 10px 0px -10px 0px;}\n\
     .tab-menu ul {height:30px;border-bottom:1px solid gray;list-style:none;padding-left:0;}\n\
     .tab-menu ul li {float:left;width:150px;margin-right:3px;color:#000;border:solid 1px gray;border-bottom:none; text-align:center;line-height:30px;}\n\
@@ -446,12 +452,22 @@ if (testPlatform == "Android") {
     }
 
     var createHtmlBodyContainerVersion = function(space) {
+        for (let i = 0; i < testBackends.length; i++) {
+            numberPasstoFail = numberPasstoFail + pageData.get(testBackends[i]).get("pass2fail").length;
+            numberFailtoPass = numberFailtoPass + pageData.get(testBackends[i]).get("fail2pass").length;
+        }
+
+        numberTotal = numberPasstoFail + numberFailtoPass;
+
         htmlStream.write(space + "<div>\n");
-        htmlStream.write(space + "  <h2>Summary by PR Submission Criteria Checking</h2>\n");
+        htmlStream.write(space + "  <h2>PR Submission Checking Summary</h2>\n");
         htmlStream.write(space + "  <hr />\n");
-        htmlStream.write(space + "  <h3>Baseline Info:</h3>\n");
+        htmlStream.write(space + "  <h3>Information:</h3>\n");
         htmlStream.write(space + "    <div>Chromium version: " + versionChromium + "</div>\n");
         htmlStream.write(space + "    <div>Webml-polyfill version: " + versionPolyfill + "</div>\n");
+        htmlStream.write(space + "    <div>Pass to Fail: " + numberPasstoFail + "</div>\n");
+        htmlStream.write(space + "    <div>Fail to Pass: " + numberFailtoPass + "</div>\n");
+        htmlStream.write(space + "    <div>Total: " + numberTotal + "</div>\n");
         htmlStream.write(space + "</div>\n");
     }
 
@@ -467,6 +483,20 @@ if (testPlatform == "Android") {
 
             htmlStream.write(space + "</div>\n");
         }
+    }
+
+    var createHtmlBodyContainerSuggest = function(space) {
+        htmlStream.write(space + "<div>\n");
+        htmlStream.write(space + "  <hr />\n");
+
+        if (numberTotal == 0 && crashData.length == 0) {
+            htmlStream.write(space + "    <ul class='suggest'>Suggest to merge this PR</ul>\n");
+        } else {
+            htmlStream.write(space + "    <ul class='notsuggest'>Not suggest to merge this PR</ul>\n");
+        }
+
+        htmlStream.write(space + "  <hr />\n");
+        htmlStream.write(space + "</div>\n");
     }
 
     var createHtmlBodyContainerResultMenu =  function(space) {
@@ -624,6 +654,7 @@ if (testPlatform == "Android") {
 
         createHtmlBodyContainerVersion(space + "  ");
         createHtmlBodyContainerWarnning(space + "  ");
+        createHtmlBodyContainerSuggest(space + "  ");
         createHtmlBodyContainerResult(space + "  ");
 
         htmlStream.write(space + "</div>\n");
