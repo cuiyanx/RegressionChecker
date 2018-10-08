@@ -7,16 +7,6 @@ const execSync = require("child_process").execSync;
 const fs = require("fs");
 const os = require("os");
 
-var sys = os.type();
-var platformRun = null;
-if (sys == "Linux") {
-    platformRun = "Linux";
-} else if (sys == "Darwin") {
-    platformRun = "Mac";
-} else if (sys == "Windows_NT") {
-    platformRun = "Windows";
-}
-
 var outputPath = "./output";
 if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath);
@@ -58,7 +48,7 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
 var csvFilePath = outputPath + "/report-check-result.csv";
 csvStream.pipe(fs.createWriteStream(csvFilePath));
 
-var remoteURL, driver, backendModel, chromeOption, command, androidSN;
+var remoteURL, driver, backendModel, chromeOption, command, androidSN, loadPageCount;
 var backendModels = [
     "Mac-MPS",
     "Mac-BNNS",
@@ -75,7 +65,7 @@ var backendModels = [
 ];
 
 var TTFCCjson = JSON.parse(fs.readFileSync("./TTFCC.config.json"));
-var andriodFlag = TTFCCjson.andriod;
+var testPlatform = TTFCCjson.platform;
 var chromiumPath = TTFCCjson.chromiumPath;
 
 var baselinejson = JSON.parse(fs.readFileSync("./baseline/baseline.config.json"));
@@ -137,7 +127,7 @@ function TTFCClog (target, message) {
 
 TTFCClog("console", "checking runtime environment....");
 
-if (andriodFlag) {
+if (testPlatform == "Android") {
     TTFCClog("console", "runtime environment: android");
 
     try {
@@ -175,9 +165,7 @@ if (andriodFlag) {
 
     command = "adb -s " + androidSN + " shell am force-stop org.chromium.chrome";
     execSync(command, {encoding: "UTF-8", stdio: "pipe"});
-}
-
-if (platformRun == "Linux") {
+} else if (testPlatform == "Linux") {
     TTFCClog("console", "runtime environment: Linux");
 
     if (fs.existsSync(chromiumPath)) {
@@ -194,7 +182,7 @@ if (platformRun == "Linux") {
             throw e;
         }
     }
-} else if (platformRun == "Mac") {
+} else if (testPlatform == "Mac") {
     TTFCClog("console", "runtime environment: Mac");
 
     if (fs.existsSync(chromiumPath)) {
@@ -220,6 +208,9 @@ if (platformRun == "Linux") {
             throw e;
         }
     }
+} else if (testPlatform == "Windows") {
+    TTFCClog("console", "runtime environment: Windows");
+    TTFCClog("console", "will support Windows platform");
 }
 
 (async function() {
@@ -667,8 +658,9 @@ if (platformRun == "Linux") {
         continueFlag = false;
 
         if (backendModel === "Mac-MPS") {
-            if (platformRun === "Mac") {
+            if (testPlatform === "Mac") {
                 testBackends.push("Mac-MPS");
+                loadPageCount = 80;
                 remoteURL = "https://brucedai.github.io/nt/testm/index-local.html?backend=mps";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
@@ -677,8 +669,9 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Mac-BNNS") {
-            if (platformRun === "Mac") {
+            if (testPlatform === "Mac") {
                 testBackends.push("Mac-BNNS");
+                loadPageCount = 80;
                 remoteURL = "https://brucedai.github.io/nt/testm/index-local.html?backend=bnns";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
@@ -687,8 +680,9 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Mac-WASM") {
-            if (platformRun === "Mac") {
+            if (testPlatform === "Mac") {
                 testBackends.push("Mac-WASM");
+                loadPageCount = 80;
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
@@ -697,8 +691,9 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Mac-WebGL2") {
-            if (platformRun === "Mac") {
+            if (testPlatform === "Mac") {
                 testBackends.push("Mac-WebGL2");
+                loadPageCount = 80;
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
@@ -707,8 +702,9 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Android-NNAPI") {
-            if (andriodFlag) {
+            if (testPlatform === "Android") {
                 testBackends.push("Android-NNAPI");
+                loadPageCount = 10;
                 remoteURL = "https://brucedai.github.io/nt/testa/index-local.html";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
@@ -718,8 +714,9 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Android-WASM") {
-            if (andriodFlag) {
+            if (testPlatform === "Android") {
                 testBackends.push("Android-WASM");
+                loadPageCount = 10;
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
@@ -729,8 +726,9 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Android-WebGL2") {
-            if (andriodFlag) {
+            if (testPlatform === "Android") {
                 testBackends.push("Android-WebGL2");
+                loadPageCount = 10;
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
@@ -740,7 +738,7 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Windows-clDNN") {
-            if (platformRun === "Windows") {
+            if (testPlatform === "Windows") {
                 testBackends.push("Windows-clDNN");
                 TTFCClog("console", "will support Windows platform with clDNN backend");
                 continue;
@@ -748,7 +746,7 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Windows-WASM") {
-            if (platformRun === "Windows") {
+            if (testPlatform === "Windows") {
                 testBackends.push("Windows-WASM");
                 TTFCClog("console", "will support Windows platform with WASM backend");
                 continue;
@@ -756,7 +754,7 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Windows-WebGL2") {
-            if (platformRun === "Windows") {
+            if (testPlatform === "Windows") {
                 testBackends.push("Windows-WebGL2");
                 TTFCClog("console", "will support Windows platform with WebGL2 backend");
                 continue;
@@ -764,8 +762,9 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Linux-WASM") {
-            if (platformRun === "Linux") {
+            if (testPlatform === "Linux") {
                 testBackends.push("Linux-WASM");
+                loadPageCount = 30;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -774,8 +773,9 @@ if (platformRun == "Linux") {
                 continue;
             }
         } else if (backendModel === "Linux-WebGL2") {
-            if (platformRun === "Linux") {
+            if (testPlatform === "Linux") {
                 testBackends.push("Linux-WebGL2");
+                loadPageCount = 30;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -809,7 +809,9 @@ if (platformRun == "Linux") {
                     loadCount = 0;
                 }
 
-                if (loadCount >= 80) {
+                TTFCClog("debug", "loadCount: " + loadCount);
+
+                if (loadCount >= loadPageCount) {
                     return true;
                 } else {
                     return false;
@@ -818,7 +820,7 @@ if (platformRun == "Linux") {
         }, 100000).then(function() {
             TTFCClog("console", "load remote URL is completed, no crash");
         }).catch(function(err) {
-            TTFCClog("console", err);
+            TTFCClog("debug", err);
 
             if (err.message.search("session deleted because of page crash") != -1) {
                 continueFlag = true;

@@ -1,4 +1,4 @@
 {
-    "andriod": false,
+    "platform": "Android",
     "chromiumPath": "/usr/bin/chromium-browser-unstable"
 }

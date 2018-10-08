@@ -1,17 +1,21 @@
 # TTFCC
-Test tool for check chromium code.
+In order to improve the quality of WebML master branch and avoid new problems such as crash, freeze, etc.caused by the new code.
 
 ## Install
+* Installed target testing chromium package.
+* Adb tool(>= 1.0.38) is required for `Android` platform.
+* Installed dependency node modules:
+   ```sh
+   $ npm install
+   ```
 
-```sh
-$ npm install
-```
+   if `npm install chromedriver` is fail, you can install `chromedriver` with this command:
 
-if `npm install chromedriver` is fail, you can install `chromedriver` by manual.
+      $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
 
-```sh
-$ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
-```
+* Set TTFCC.config.json file
+   + `platform`: The test platform, such as `Android`, `Linux`, `Mac` and `Windows`.
+   + `chromiumPath`: Path of chromium browser.
 
 ## Start
 
@@ -19,19 +23,11 @@ $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/
 $ npm start
 ```
 
-if testing on android device, need `adb` tool.
-
-## Set TTFCC.config.json file
-
-* `andriod`: As *false*, no testing `andriod`, As *true*, testing `andriod`.
-* `chromiumPath`: Path of chromium browser on run platform (mac or linux).
-
 ## Support platform
 
-| Run Platform  | Ubuntu 16.04 |    Mac    |  android  |
-|     :---:     |     :---:    |   :---:   |   :---:   |
-| Ubuntu 16.04  |     pass     |     N/A   |    pass   |
-|      Mac      |      N/A     |    pass   |    pass   |
+|  Platform  | Ubuntu 16.04 |    Mac    |  Android  |  Windows  |
+|    :---:   |     :---:    |   :---:   |   :---:   |   :---:   |
+|  chromium  |     pass     |    pass   |    pass   |    todo   |
 
 ## Result html
 
