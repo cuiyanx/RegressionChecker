@@ -489,7 +489,7 @@ var numberTotal = 0;
         htmlStream.write(space + "<div>\n");
         htmlStream.write(space + "  <hr />\n");
 
-        if (numberTotal == 0 && crashData.length == 0) {
+        if (numberPasstoFail == 0 && crashData.length == 0) {
             htmlStream.write(space + "    <ul class='suggest'>Suggest to merge this PR</ul>\n");
         } else {
             htmlStream.write(space + "    <ul class='notsuggest'>Not suggest to merge this PR</ul>\n");
