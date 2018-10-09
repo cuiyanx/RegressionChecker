@@ -1,19 +1,19 @@
 {
    "Version" : {
-      "chromium": "8d111d1",
-      "polyfill": "bb00e86"
+      "chromium": "313c1c2",
+      "polyfill": "cfa0a2f"
    },
    "Mac-MPS":{
       "total": 355,
-      "pass": 136,
-      "fail": 210,
-      "block": 9
+      "pass": 200,
+      "fail": 154,
+      "block": 1
   },
    "Mac-BNNS":{
       "total": 355,
-      "pass": 142,
-      "fail": 204,
-      "block": 9
+      "pass": 193,
+      "fail": 161,
+      "block": 1
   },
    "Mac-WASM":{
       "total": 355,
@@ -29,9 +29,9 @@
   },
    "Android-NNAPI":{
       "total": 355,
-      "pass": 171,
-      "fail": 175,
-      "block": 9
+      "pass": 222,
+      "fail": 132,
+      "block": 1
   },
    "Android-WASM":{
       "total": 355,
@@ -47,9 +47,9 @@
   },
    "Windows-clDNN":{
       "total": 355,
-      "pass": 154,
-      "fail": 192,
-      "block": 9
+      "pass": 205,
+      "fail": 149,
+      "block": 1
   },
    "Windows-WASM":{
       "total": 355,
@@ -62,6 +62,12 @@
       "pass": 210,
       "fail": 145,
       "block": 0
+  },
+   "Linux-clDNN":{
+      "total": 355,
+      "pass": 205,
+      "fail": 149,
+      "block": 1
   },
    "Linux-WASM":{
       "total": 355,
