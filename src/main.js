@@ -39,6 +39,8 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
     "CheckResult(Windows-WASM)": row.CRWWASM,
     "BaseLine(Windows-WebGL2)": row.BLWWebGL2,
     "CheckResult(Windows-WebGL2)": row.CRWWebGL2,
+    "BaseLine(Linux-clDNN)": row.BLLclDNN,
+    "CheckResult(Linux-clDNN)": row.CRLclDNN,
     "BaseLine(Linux-WASM)": row.BLLWASM,
     "CheckResult(Linux-WASM)": row.CRLWASM,
     "BaseLine(Linux-WebGL2)": row.BLLWebGL2,
@@ -60,13 +62,14 @@ var backendModels = [
     "Windows-clDNN",
     "Windows-WASM",
     "Windows-WebGL2",
+    "Linux-clDNN",
     "Linux-WASM",
     "Linux-WebGL2"
 ];
 
-var TTFCCjson = JSON.parse(fs.readFileSync("./TTFCC.config.json"));
-var testPlatform = TTFCCjson.platform;
-var chromiumPath = TTFCCjson.chromiumPath;
+var RCjson = JSON.parse(fs.readFileSync("./config.json"));
+var testPlatform = RCjson.platform;
+var chromiumPath = RCjson.chromiumPath;
 
 var baselinejson = JSON.parse(fs.readFileSync("./baseline/baseline.config.json"));
 var versionChromium = baselinejson.Version.chromium;
@@ -107,28 +110,29 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Windows-clDNN", data[10]],
             ["Windows-WASM", data[11]],
             ["Windows-WebGL2", data[12]],
-            ["Linux-WASM", data[13]],
-            ["Linux-WebGL2", data[14]],
+            ["Linux-clDNN", data[13]],
+            ["Linux-WASM", data[14]],
+            ["Linux-WebGL2", data[15]]
         ]
     ));
 });
 
 var continueFlag = false;
 var debugFlag = false;
-function TTFCClog (target, message) {
+function RClog (target, message) {
     if (target == "console") {
-        console.log("TTFCC -- " + message);
+        console.log("RC -- " + message);
     } else if (target == "debug") {
-        if (debugFlag) console.log("TTFCC -- " + message);
+        if (debugFlag) console.log("RC -- " + message);
     } else {
         throw new Error("Not support target '" + target + "'");
     }
 }
 
-TTFCClog("console", "checking runtime environment....");
+RClog("console", "checking runtime environment....");
 
 if (testPlatform == "Android") {
-    TTFCClog("console", "runtime environment: android");
+    RClog("console", "runtime environment: android");
 
     try {
         command = "adb devices";
@@ -143,10 +147,10 @@ if (testPlatform == "Android") {
             throw new Error("no android device");
         } else if (array.length > 1) {
             androidSN = array[0];
-            TTFCClog("console", "more android devices, using the first one: " + array[0]);
+            RClog("console", "more android devices, using the first one: " + array[0]);
         } else {
             androidSN = array[0];
-            TTFCClog("console", "android device: " + array[0]);
+            RClog("console", "android device: " + array[0]);
         }
     } catch(e) {
         throw e;
@@ -155,7 +159,7 @@ if (testPlatform == "Android") {
     try {
         command = "adb -s " + androidSN + " shell pm list packages | grep org.chromium.chrome";
         execSync(command, {encoding: "UTF-8", stdio: "pipe"});
-        TTFCClog("console", "chromium to be tested is installed correctly");
+        RClog("console", "chromium to be tested is installed correctly");
     } catch(e) {
         throw new Error("chromium to be tested is not installed correctly");
     }
@@ -166,10 +170,10 @@ if (testPlatform == "Android") {
     command = "adb -s " + androidSN + " shell am force-stop org.chromium.chrome";
     execSync(command, {encoding: "UTF-8", stdio: "pipe"});
 } else if (testPlatform == "Linux") {
-    TTFCClog("console", "runtime environment: Linux");
+    RClog("console", "runtime environment: Linux");
 
     if (fs.existsSync(chromiumPath)) {
-        TTFCClog("console", "chromium to be tested is installed correctly");
+        RClog("console", "chromium to be tested is installed correctly");
     } else {
         throw new Error("chromium to be tested is not installed correctly");
     }
@@ -183,10 +187,10 @@ if (testPlatform == "Android") {
         }
     }
 } else if (testPlatform == "Mac") {
-    TTFCClog("console", "runtime environment: Mac");
+    RClog("console", "runtime environment: Mac");
 
     if (fs.existsSync(chromiumPath)) {
-        TTFCClog("console", "chromium to be tested is installed correctly");
+        RClog("console", "chromium to be tested is installed correctly");
     } else {
         throw new Error("chromium to be tested is not installed correctly");
     }
@@ -209,8 +213,8 @@ if (testPlatform == "Android") {
         }
     }
 } else if (testPlatform == "Windows") {
-    TTFCClog("console", "runtime environment: Windows");
-    TTFCClog("console", "will support Windows platform");
+    RClog("console", "runtime environment: Windows");
+    RClog("console", "will support Windows platform");
 }
 
 var numberPasstoFail = 0;
@@ -218,7 +222,7 @@ var numberFailtoPass = 0;
 var numberTotal = 0;
 
 (async function() {
-    TTFCClog("console", "checking chromium code is start");
+    RClog("console", "checking chromium code is start");
 
     var getInfo = async function(element, count, title, module) {
         return element.getAttribute("class").then(function(message) {
@@ -239,9 +243,9 @@ var numberTotal = 0;
             graspData["total"] = graspData["total"] + 1;
             module = module + "/" + count;
 
-            TTFCClog("debug", "'Feature': " + title);
-            TTFCClog("debug", "'Case Id': " + module);
-            TTFCClog("debug", "'Case Status': " + checkCaseStatus + "\n");
+            RClog("debug", "'Feature': " + title);
+            RClog("debug", "'Case Id': " + module);
+            RClog("debug", "'Case Status': " + checkCaseStatus + "\n");
 
             let resultFlag = checkResult(backendModel, title, module, checkCaseStatus);
             if (resultFlag) {
@@ -306,6 +310,10 @@ var numberTotal = 0;
                         DataArray["BLLWebGL2"] = baseLineStatus;
                         DataArray["CRLWebGL2"] = checkCaseStatus;
                         break;
+                    case "Linux-clDNN":
+                        DataArray["BLLclDNN"] = baseLineStatus;
+                        DataArray["CRLclDNN"] = checkCaseStatus;
+                        break;
                 }
 
                 if (baseLineStatus == "Pass" && checkCaseStatus == "Fail") {
@@ -314,8 +322,8 @@ var numberTotal = 0;
                     pageData.get(backendModel).get("fail2pass").push([title, module + " - " + name]);
                 }
 
-                TTFCClog("console", title + " - " + module + " - " + name);
-                TTFCClog("console", checkCaseStatus + " : " + baseLineStatus);
+                RClog("console", title + " - " + module + " - " + name);
+                RClog("console", checkCaseStatus + " : " + baseLineStatus);
             }
         });
     }
@@ -338,7 +346,7 @@ var numberTotal = 0;
                                                                  "@class='test fail' or " +
                                                                  "@class='test pass pending' or " +
                                                                  "@class='test pass medium']")).then(async function(arrayCase) {
-                                TTFCClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
+                                RClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
 
                                 for (let k = 0; k < arrayCase.length; k++) {
                                     await getInfo(arrayCase[k], k + 1, title, module).then(function() {
@@ -357,7 +365,7 @@ var numberTotal = 0;
                                                                           "@class='test fail' or " +
                                                                           "@class='test pass pending' or " +
                                                                           "@class='test pass medium']")).then(async function(arrayCase) {
-                                        TTFCClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
+                                        RClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
 
                                         for (let k = 0; k < arrayCase.length; k++) {
                                             await getInfo(arrayCase[k], k + 1, title, module).then(function() {
@@ -376,12 +384,12 @@ var numberTotal = 0;
         await driver.wait(function() {
             if (actionCount != actions) {
                 actionCount = actions;
-                TTFCClog("debug", baselinejson[backendModel]["total"] + " : " + actionCount);
+                RClog("debug", baselinejson[backendModel]["total"] + " : " + actionCount);
             }
 
             return (actions == baselinejson[backendModel]["total"]);
         }, 100000).catch(function() {
-            TTFCClog("console", "total: " + baselinejson[backendModel]["total"] + " grasp: " + actionCount);
+            RClog("console", "total: " + baselinejson[backendModel]["total"] + " grasp: " + actionCount);
             throw new Error("failed to grasp all test result");
         });
     }
@@ -452,29 +460,20 @@ var numberTotal = 0;
     }
 
     var createHtmlBodyContainerVersion = function(space) {
-        for (let i = 0; i < testBackends.length; i++) {
-            numberPasstoFail = numberPasstoFail + pageData.get(testBackends[i]).get("pass2fail").length;
-            numberFailtoPass = numberFailtoPass + pageData.get(testBackends[i]).get("fail2pass").length;
-        }
-
-        numberTotal = numberPasstoFail + numberFailtoPass;
-
         htmlStream.write(space + "<div>\n");
         htmlStream.write(space + "  <h2>PR Submission Checking Summary</h2>\n");
         htmlStream.write(space + "  <hr />\n");
-        htmlStream.write(space + "  <h3>Information:</h3>\n");
+        htmlStream.write(space + "  <h3>Baseline Information:</h3>\n");
         htmlStream.write(space + "    <div>Chromium version: " + versionChromium + "</div>\n");
         htmlStream.write(space + "    <div>Webml-polyfill version: " + versionPolyfill + "</div>\n");
-        htmlStream.write(space + "    <div>Pass to Fail: " + numberPasstoFail + "</div>\n");
-        htmlStream.write(space + "    <div>Fail to Pass: " + numberFailtoPass + "</div>\n");
-        htmlStream.write(space + "    <div>Total: " + numberTotal + "</div>\n");
         htmlStream.write(space + "</div>\n");
     }
 
     var createHtmlBodyContainerWarnning = function(space) {
         if (crashData.length !== 0) {
+            htmlStream.write(space + "<hr />\n");
             htmlStream.write(space + "<div class='warnning' id='option_div'>\n");
-            htmlStream.write(space + "  <h3>[option]Warnning:</h3>\n");
+            htmlStream.write(space + "  <h3>Warnning:</h3>\n");
 
             for (let i = 0; i < crashData.length; i++) {
                 htmlStream.write(space + "  <p id='" + crashData[i] + "'>Crash happened when testing " +
@@ -486,15 +485,27 @@ var numberTotal = 0;
     }
 
     var createHtmlBodyContainerSuggest = function(space) {
-        htmlStream.write(space + "<div>\n");
-        htmlStream.write(space + "  <hr />\n");
+        for (let i = 0; i < testBackends.length; i++) {
+            numberPasstoFail = numberPasstoFail + pageData.get(testBackends[i]).get("pass2fail").length;
+            numberFailtoPass = numberFailtoPass + pageData.get(testBackends[i]).get("fail2pass").length;
 
-        if (numberPasstoFail == 0 && crashData.length == 0) {
-            htmlStream.write(space + "    <ul class='suggest'>Suggest to merge this PR</ul>\n");
-        } else {
-            htmlStream.write(space + "    <ul class='notsuggest'>Not suggest to merge this PR</ul>\n");
+            if (typeof pageDataTotal.get(testBackends[i]).get("grasp")[0] !== "undefined") {
+                numberTotal = numberTotal + pageDataTotal.get(testBackends[i]).get("grasp")[0];
+            }
         }
 
+        htmlStream.write(space + "<div>\n");
+
+        if (numberPasstoFail == 0 && crashData.length == 0) {
+            htmlStream.write(space + "  <h3>PR Submission Proposal: <span class='suggest'>OK</span></h3>\n");
+        } else {
+            htmlStream.write(space + "  <h3>PR Submission Proposal: <span class='notsuggest'>Please improve your code</span></h3>\n");
+        }
+
+        htmlStream.write(space + "  <h3>PR Submission Message:</h3>\n");
+        htmlStream.write(space + "    <div>Total Test Cases: " + numberTotal + "</div>\n");
+        htmlStream.write(space + "    <div>Pass to Fail: " + numberPasstoFail + "</div>\n");
+        htmlStream.write(space + "    <div>Fail to Pass: " + numberFailtoPass + "</div>\n");
         htmlStream.write(space + "  <hr />\n");
         htmlStream.write(space + "</div>\n");
     }
@@ -584,7 +595,7 @@ var numberTotal = 0;
         for (let i = 0; i < testBackends.length; i++) {
             htmlStream.write(space + "      <th>Baseline\n");
             htmlStream.write(space + "      </th>\n");
-            htmlStream.write(space + "      <th>Grasp\n");
+            htmlStream.write(space + "      <th>Test Build\n");
             htmlStream.write(space + "      </th>\n");
         }
 
@@ -603,7 +614,7 @@ var numberTotal = 0;
                 htmlStream.write(space + "      </td>\n");
 
                 if (typeof pageDataTotal.get(testBackends[j]).get("grasp")[i] == "undefined") {
-                    htmlStream.write(space + "      <td>\n");
+                    htmlStream.write(space + "      <td>N/A\n");
                 } else {
                     htmlStream.write(space + "      <td>" + pageDataTotal.get(testBackends[j]).get("grasp")[i] + "\n");
                 }
@@ -771,7 +782,7 @@ var numberTotal = 0;
         } else if (backendModel === "Windows-clDNN") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-clDNN");
-                TTFCClog("console", "will support Windows platform with clDNN backend");
+                RClog("console", "will support Windows platform with clDNN backend");
                 continue;
             } else {
                 continue;
@@ -779,7 +790,7 @@ var numberTotal = 0;
         } else if (backendModel === "Windows-WASM") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-WASM");
-                TTFCClog("console", "will support Windows platform with WASM backend");
+                RClog("console", "will support Windows platform with WASM backend");
                 continue;
             } else {
                 continue;
@@ -787,8 +798,20 @@ var numberTotal = 0;
         } else if (backendModel === "Windows-WebGL2") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-WebGL2");
-                TTFCClog("console", "will support Windows platform with WebGL2 backend");
+                RClog("console", "will support Windows platform with WebGL2 backend");
                 continue;
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Linux-clDNN") {
+            if (testPlatform === "Linux") {
+                testBackends.push("Linux-clDNN");
+                loadPageCount = 30;
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML")
+                    .addArguments("--no-sandbox");
+                remoteURL = "https://brucedai.github.io/nt/testa/index-local.html?backend=cldnn";
             } else {
                 continue;
             }
@@ -823,7 +846,7 @@ var numberTotal = 0;
 
         await driver.get(remoteURL);
         await driver.wait(until.elementLocated(By.xpath("//*[@id='mocha-stats']/li[1]/canvas")), 100000).then(function() {
-            TTFCClog("console", "open remote URL: " + remoteURL);
+            RClog("console", "open remote URL: " + remoteURL);
         }).catch(function() {
             throw new Error("failed to load web page");
         });
@@ -840,7 +863,7 @@ var numberTotal = 0;
                     loadCount = 0;
                 }
 
-                TTFCClog("debug", "loadCount: " + loadCount);
+                RClog("debug", "loadCount: " + loadCount);
 
                 if (loadCount >= loadPageCount) {
                     return true;
@@ -849,14 +872,14 @@ var numberTotal = 0;
                 }
             }
         }, 100000).then(function() {
-            TTFCClog("console", "load remote URL is completed, no crash");
+            RClog("console", "load remote URL is completed, no crash");
         }).catch(function(err) {
-            TTFCClog("debug", err);
+            RClog("debug", err);
 
             if (err.message.search("session deleted because of page crash") != -1) {
                 continueFlag = true;
                 crashData.push(backendModel);
-                TTFCClog("console", "remote URL is crashed");
+                RClog("console", "remote URL is crashed");
             } else {
                 throw err;
             }
@@ -870,9 +893,9 @@ var numberTotal = 0;
             continue;
         }
 
-        TTFCClog("console", "checking with '" + backendModel + "' backend is start");
+        RClog("console", "checking with '" + backendModel + "' backend is start");
 
-        TTFCClog("console", "checking....");
+        RClog("console", "checking....");
 
         await graspResult();
 
@@ -886,7 +909,7 @@ var numberTotal = 0;
         await driver.quit();
         await driver.sleep(2000);
 
-        TTFCClog("console", "checking with '" + backendModel + "' backend is completed");
+        RClog("console", "checking with '" + backendModel + "' backend is completed");
     }
 
     for (let value of writeCSVData.values()) {
@@ -905,8 +928,8 @@ var numberTotal = 0;
 
     await driver.get("file://" + process.cwd() + "/output/report-check-result.html");
 })().then(function() {
-    TTFCClog("console", "checking chromium code is completed");
+    RClog("console", "checking chromium code is completed");
 }).catch(function(err) {
     driver.quit();
-    TTFCClog("console", err);
+    RClog("console", err);
 });

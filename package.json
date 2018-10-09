@@ -1,7 +1,7 @@
 {
-  "name": "TTFCC",
+  "name": "RegressionChecker",
   "version": "1.0.0",
-  "description": "Test tool for check chromium code.",
+  "description": "Test tool for checking regression when submitting Web ML PR.",
   "main": "./src/main.js",
   "scripts": {
     "start": "node ./src/main.js"
@@ -18,13 +18,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cuiyanx/TTFCC.git"
+    "url": "git+https://github.com/cuiyanx/RegressionChecker.git"
   },
   "keywords": [],
   "author": "yanx.cui@intel.com",
   "license": "Apache 2.0",
   "bugs": {
-    "url": "https://github.com/cuiyanx/TTFCC/issues"
+    "url": "https://github.com/cuiyanx/RegressionChecker/issues"
   },
-  "homepage": "https://github.com/cuiyanx/TTFCC#readme"
+  "homepage": "https://github.com/cuiyanx/RegressionChecker#readme"
 }

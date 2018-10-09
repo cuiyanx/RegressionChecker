@@ -1,5 +1,5 @@
-# TTFCC
-In order to improve the quality of WebML master branch and avoid new problems such as crash, freeze, etc.caused by the new code.
+# RegressionChecker
+In order to improve the quality of Web ML master branch and avoid new problems such as crash, freeze, etc.caused by the new code.
 
 ## Install
 * Installed target testing chromium package.
@@ -13,9 +13,11 @@ In order to improve the quality of WebML master branch and avoid new problems su
 
       $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
 
-* Set TTFCC.config.json file
+* Set config.json file
    + `platform`: The test platform, such as `Android`, `Linux`, `Mac` and `Windows`.
    + `chromiumPath`: Path of chromium browser.
+
+**Note**: If the platform is set as `Android`, the chromiumPath will not be set.
 
 ## Start
 
@@ -31,4 +33,4 @@ $ npm start
 
 ## Result html
 
-![result-html](./baseline/result-html.jpg)
+![result-html](./baseline/result-html.png)
