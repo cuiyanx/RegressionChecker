@@ -474,8 +474,9 @@ var numberTotal = 0;
     }
 
     var createHtmlBodyContainerWarnning = function(space) {
+        htmlStream.write(space + "<hr />\n");
+
         if (crashData.length !== 0) {
-            htmlStream.write(space + "<hr />\n");
             htmlStream.write(space + "<div class='warnning' id='option_div'>\n");
             htmlStream.write(space + "  <h3>Warnning:</h3>\n");
 
