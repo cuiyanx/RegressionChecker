@@ -115,6 +115,10 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Linux-WebGL2", data[15]]
         ]
     ));
+}).on("end", function() {
+    for (let key of baseLineData.keys()) {
+        RClog("debug", "key: " + key);
+    }
 });
 
 var continueFlag = false;
@@ -317,13 +321,13 @@ var numberTotal = 0;
                 }
 
                 if (baseLineStatus == "Pass" && checkCaseStatus == "Fail") {
-                    pageData.get(backendModel).get("pass2fail").push([title, module + " - " + name]);
+                    pageData.get(backendModel).get("pass2fail").push([title, module + "-" + name]);
                 } else {
-                    pageData.get(backendModel).get("fail2pass").push([title, module + " - " + name]);
+                    pageData.get(backendModel).get("fail2pass").push([title, module + "-" + name]);
                 }
 
-                RClog("console", title + " - " + module + " - " + name);
-                RClog("console", checkCaseStatus + " : " + baseLineStatus);
+                RClog("console", title + "-" + module + "-" + name);
+                RClog("console", baseLineStatus + " : " + checkCaseStatus);
             }
         });
     }
@@ -541,11 +545,21 @@ var numberTotal = 0;
             htmlStream.write(space + "      </td>\n");
             htmlStream.write(space + "    </tr>\n");
         } else {
-            for (let i = 0; i < pageData.get(backend).get("pass2fail").length; i++) {
+            let pass2failArray = new Array();
+            for (let key of baseLineData.keys()) {
+                for (let i = 0; i < pageData.get(backend).get("pass2fail").length; i++) {
+                    if ((key + "-" + baseLineData.get(key).get("TestCase")) ==
+                        (pageData.get(backend).get("pass2fail")[i][0] + "-" + pageData.get(backend).get("pass2fail")[i][1])) {
+                        pass2failArray.push([pageData.get(backend).get("pass2fail")[i][0], pageData.get(backend).get("pass2fail")[i][1]]);
+                    }
+                }
+            }
+
+            for (let i = 0; i < pass2failArray.length; i++) {
                 htmlStream.write(space + "      <tr class='pass2fail'>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get("pass2fail")[i][0] + "\n");
+                htmlStream.write(space + "        <td >" + pass2failArray[i][0] + "\n");
                 htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get("pass2fail")[i][1] + "\n");
+                htmlStream.write(space + "        <td >" + pass2failArray[i][1] + "\n");
                 htmlStream.write(space + "        </td>\n");
                 htmlStream.write(space + "        <td class='pass'>Pass\n");
                 htmlStream.write(space + "        </td>\n");
@@ -561,11 +575,21 @@ var numberTotal = 0;
             htmlStream.write(space + "      </td>\n");
             htmlStream.write(space + "    </tr>\n");
         } else {
-            for (let i = 0; i < pageData.get(backend).get("fail2pass").length; i++) {
+            let fail2passArray = new Array();
+            for (let key of baseLineData.keys()) {
+                for (let i = 0; i < pageData.get(backend).get("fail2pass").length; i++) {
+                    if ((key + "-" + baseLineData.get(key).get("TestCase")) ==
+                        (pageData.get(backend).get("fail2pass")[i][0] + "-" + pageData.get(backend).get("fail2pass")[i][1])){
+                        fail2passArray.push([pageData.get(backend).get("fail2pass")[i][0], pageData.get(backend).get("fail2pass")[i][1]]);
+                    }
+                }
+            }
+
+            for (let i = 0; i < fail2passArray.length; i++) {
                 htmlStream.write(space + "      <tr class='fail2pass'>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get("fail2pass")[i][0] + "\n");
+                htmlStream.write(space + "        <td >" + fail2passArray[i][0] + "\n");
                 htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get("fail2pass")[i][1] + "\n");
+                htmlStream.write(space + "        <td >" + fail2passArray[i][1] + "\n");
                 htmlStream.write(space + "        </td>\n");
                 htmlStream.write(space + "        <td class='fail'>Fail\n");
                 htmlStream.write(space + "        </td>\n");
