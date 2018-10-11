@@ -147,7 +147,7 @@ if (testPlatform == "Android") {
             command = "killall adb";
             execSync(command, {encoding: "UTF-8", stdio: "pipe"});
         } catch(e) {
-            if (!e.message.search("no process found")) {
+            if (e.message.search("no process found") == -1) {
                 throw e;
             }
         }
@@ -158,7 +158,7 @@ if (testPlatform == "Android") {
             command = "killall adb";
             execSync(command, {encoding: "UTF-8", stdio: "pipe"});
         } catch(e) {
-            if (!e.message.search("No matching processes")) {
+            if (e.message.search("No matching processes") == -1) {
                 throw e;
             }
         }
@@ -218,7 +218,7 @@ if (testPlatform == "Android") {
         command = "killall chrome";
         execSync(command, {encoding: "UTF-8", stdio: "pipe"});
     } catch(e) {
-        if (!e.message.search("no process found")) {
+        if (e.message.search("no process found") == -1) {
             throw e;
         }
     }
@@ -235,7 +235,7 @@ if (testPlatform == "Android") {
         command = "killall Chromium";
         execSync(command, {encoding: "UTF-8", stdio: "pipe"});
     } catch(e) {
-        if (!e.message.search("No matching processes")) {
+        if (e.message.search("No matching processes") == -1) {
             throw e;
         }
     }
@@ -244,7 +244,7 @@ if (testPlatform == "Android") {
         command = "killall 'Google Chrome'";
         execSync(command, {encoding: "UTF-8", stdio: "pipe"});
     } catch(e) {
-        if (!e.message.search("No matching processes")) {
+        if (e.message.search("No matching processes") == -1) {
             throw e;
         }
     }
