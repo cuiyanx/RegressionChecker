@@ -50,7 +50,7 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
 var csvFilePath = outputPath + "/report-check-result.csv";
 csvStream.pipe(fs.createWriteStream(csvFilePath));
 
-var remoteURL, driver, backendModel, chromeOption, command, androidSN, loadPageCount;
+var remoteURL, driver, backendModel, chromeOption, command, androidSN, loadPageCount, adbPath;
 var backendModels = [
     "Mac-MPS",
     "Mac-BNNS",
@@ -138,8 +138,40 @@ RClog("console", "checking runtime environment....");
 if (testPlatform == "Android") {
     RClog("console", "runtime environment: android");
 
+    var sys = os.type();
+
+    if (sys == "Linux") {
+        adbPath = "./lib/adb-tool/Linux/adb";
+
+        try {
+            command = "killall adb";
+            execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+        } catch(e) {
+            if (!e.message.search("no process found")) {
+                throw e;
+            }
+        }
+    } else if (sys == "Darwin") {
+        adbPath = "./lib/adb-tool/Mac/adb";
+
+        try {
+            command = "killall adb";
+            execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+        } catch(e) {
+            if (!e.message.search("No matching processes")) {
+                throw e;
+            }
+        }
+    } else if (sys == "Windows_NT") {
+        adbPath = "./lib/adb-tool/Windows/adb.exe";
+        RClog("console", "will support to clean other adb server on Windows platform");
+    }
+
+    command = adbPath + " start-server";
+    execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+
     try {
-        command = "adb devices";
+        command = adbPath + " devices";
         let log = execSync(command, {encoding: "UTF-8", stdio: "pipe"}).split(/\s+/);
 
         let array = new Array();
@@ -161,17 +193,17 @@ if (testPlatform == "Android") {
     }
 
     try {
-        command = "adb -s " + androidSN + " shell pm list packages | grep org.chromium.chrome";
+        command = adbPath + " -s " + androidSN + " shell pm list packages | grep org.chromium.chrome";
         execSync(command, {encoding: "UTF-8", stdio: "pipe"});
         RClog("console", "chromium to be tested is installed correctly");
     } catch(e) {
         throw new Error("chromium to be tested is not installed correctly");
     }
 
-    command = "adb -s " + androidSN + " shell am force-stop com.android.chrome";
+    command = adbPath + " -s " + androidSN + " shell am force-stop com.android.chrome";
     execSync(command, {encoding: "UTF-8", stdio: "pipe"});
 
-    command = "adb -s " + androidSN + " shell am force-stop org.chromium.chrome";
+    command = adbPath + " -s " + androidSN + " shell am force-stop org.chromium.chrome";
     execSync(command, {encoding: "UTF-8", stdio: "pipe"});
 } else if (testPlatform == "Linux") {
     RClog("console", "runtime environment: Linux");

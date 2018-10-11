@@ -3,7 +3,6 @@ In order to improve the quality of Web ML master branch and avoid new problems s
 
 ## Install
 * Installed target testing chromium package.
-* Adb tool(>= 1.0.38) is required for `Android` platform.
 * Installed dependency node modules:
    ```sh
    $ npm install
