@@ -75,9 +75,47 @@ var baselinejson = JSON.parse(fs.readFileSync("./baseline/baseline.config.json")
 var versionChromium = baselinejson.Version.chromium;
 var versionPolyfill = baselinejson.Version.polyfill;
 
+/**
+ * baseLineData = writeCSVData = {
+ *     key: {
+ *         "Feature": value,
+ *         "CaseId": value,
+ *         "TestCase": value,
+ *         "Mac-MPS": value,
+ *         "Mac-BNNS": value,
+ *         "Mac-WASM": value,
+ *         "Mac-WebGL2": value,
+ *         "Android-NNAPI": value,
+ *         "Android-WASM": value,
+ *         "Android-WebGL2": value,
+ *         "Windows-clDNN": value,
+ *         "Windows-WASM": value,
+ *         "Windows-WebGL2": value,
+ *         "Linux-clDNN": value,
+ *         "Linux-WASM": value,
+ *         "Linux-WebGL2": value
+ *     }
+ * }
+ */
 var baseLineData = new Map();
 var writeCSVData = new Map();
+/**
+ * pageData = {
+ *     backend: {
+ *         "pass2fail": [value1, value2, value3],
+ *         "fail2pass": [value1, value2, value3]
+ *     }
+ * }
+ */
 var pageData = new Map();
+/**
+ * pageDataTotal = {
+ *     backend: {
+ *         "Baseline": [total, pass, fail, block, passrate],
+ *         "grasp": [total, pass, fail, block, passrate]
+ *     }
+ * }
+ */
 var pageDataTotal = new Map();
 for (let i = 0; i < backendModels.length; i++) {
     pageData.set(backendModels[i], new Map([["pass2fail", new Array()], ["fail2pass", new Array()]]));
@@ -92,6 +130,14 @@ for (let i = 0; i < backendModels.length; i++) {
 
 var testBackends = new Array();
 var crashData = new Array();
+/**
+ * graspData = [
+ *     total: value,
+ *     pass: value,
+ *     fail: value,
+ *     block: value
+ * ]
+ */
 var graspData = new Array();
 
 csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
