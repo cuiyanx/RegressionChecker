@@ -1,34 +1,42 @@
 # RegressionChecker
-In order to improve the quality of Web ML master branch and avoid new problems such as crash, freeze, etc.caused by the new code.
+This is an automation tool kit to check regression easily for developers when submitting Web ML API PRs with high quality(avoiding new problems such as crash, freeze, etc.). 
 
-## Install
-* Installed target testing chromium package.
-* Installed dependency node modules:
-   ```sh
+## Prerequisites
+* Chromium build is required to be installed on the target device before the test
+
+## Get Code
+```sh
+   $ git clone https://github.com/cuiyanx/RegressionChecker.git
+   $ cd RegressionChecker
    $ npm install
-   ```
-
-   if `npm install chromedriver` is fail, you can install `chromedriver` with this command:
+```
+   If installing `chromedriver` fails, you can install `chromedriver` with this command:
 
       $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
 
-* Set config.json file
-   + `platform`: The test platform, such as `Android`, `Linux`, `Mac` and `Windows`.
-   + `chromiumPath`: Path of chromium browser.
+## Set Configurations
+   There are two fields in the config.json:
+```
+   {
+     "platform": "Mac",
+     "chromiumPath": "/User/test/Downloads/Chromium.app/Contents/MacOS/Chromium"
+   }
+```
+   You need modify these two fields for the different platforms:
+   + `platform`: `{string}`, target platform, support Android, Mac, Linux and Windows
+   + `chromiumPath`: `{string}`, the installed chromium path on the target device. If the platform is `Android`, there is no need to set `chromiumPath`.
 
-**Note**: If the platform is set as `Android`, the chromiumPath will not be set.
-
-## Start
+## Run Tests
 
 ```sh
 $ npm start
 ```
 
-## Support platform
+## Support Platforms
 
-|  Platform  | Ubuntu 16.04 |    Mac    |  Android  |  Windows  |
-|    :---:   |     :---:    |   :---:   |   :---:   |   :---:   |
-|  chromium  |     pass     |    pass   |    pass   |    todo   |
+|  Linux  |   Mac   |  Android  |  Windows  |
+|  :---:  |  :---:  |   :---:   |   :---:   |
+|  PASS   |   PASS  |    PASS   |    TODO   |
 
 ## Result html
 
