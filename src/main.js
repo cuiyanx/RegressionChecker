@@ -6,6 +6,7 @@ const csv = require("../node_modules/fast-csv");
 const execSync = require("child_process").execSync;
 const fs = require("fs");
 const os = require("os");
+require("chromedriver");
 
 var outputPath = "./output";
 if (!fs.existsSync(outputPath)) {
@@ -209,8 +210,16 @@ if (testPlatform == "Android") {
             }
         }
     } else if (sys == "Windows_NT") {
-        adbPath = "./lib/adb-tool/Windows/adb.exe";
-        RClog("console", "will support to clean other adb server on Windows platform");
+        adbPath = ".\\lib\\adb-tool\\Windows\\adb";
+
+        try {
+            command = "taskkill /im adb.exe /f";
+            execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+        } catch(e) {
+            if (e.message.search("not found") == -1) {
+                throw e;
+            }
+        }
     }
 
     command = adbPath + " start-server";
@@ -296,7 +305,21 @@ if (testPlatform == "Android") {
     }
 } else if (testPlatform == "Windows") {
     RClog("console", "runtime environment: Windows");
-    RClog("console", "will support Windows platform");
+
+    if (fs.existsSync(chromiumPath)) {
+        RClog("console", "chromium to be tested is installed correctly");
+    } else {
+        throw new Error("chromium to be tested is not installed correctly");
+    }
+
+    try {
+        command = "taskkill /im chrome.exe /f";
+        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+    } catch(e) {
+        if (e.message.search("not found") == -1) {
+            throw e;
+        }
+    }
 }
 
 var numberPasstoFail = 0;
@@ -885,24 +908,34 @@ var numberTotal = 0;
         } else if (backendModel === "Windows-clDNN") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-clDNN");
-                RClog("console", "will support Windows platform with clDNN backend");
-                continue;
+                loadPageCount = 30;
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML")
+                    .addArguments("--no-sandbox");
+                remoteURL = "https://brucedai.github.io/nt/testa/index-local.html?backend=cldnn";
             } else {
                 continue;
             }
         } else if (backendModel === "Windows-WASM") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-WASM");
-                RClog("console", "will support Windows platform with WASM backend");
-                continue;
+                loadPageCount = 30;
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--disable-features=WebML");
+                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
             } else {
                 continue;
             }
         } else if (backendModel === "Windows-WebGL2") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-WebGL2");
-                RClog("console", "will support Windows platform with WebGL2 backend");
-                continue;
+                loadPageCount = 30;
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--disable-features=WebML");
+                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
             } else {
                 continue;
             }
@@ -1029,7 +1062,14 @@ var numberTotal = 0;
         .setChromeOptions(new Chrome.Options().setChromeBinaryPath(chromiumPath))
         .build();
 
-    await driver.get("file://" + process.cwd() + "/output/report-check-result.html");
+    let htmlPath;
+    if (sys == "Windows_NT") {
+        htmlPath = "file://" + process.cwd() + "\\output\\report-check-result.html";
+    } else {
+        htmlPath = "file://" + process.cwd() + "/output/report-check-result.html";
+    }
+
+    await driver.get(htmlPath);
 })().then(function() {
     RClog("console", "checking chromium code is completed");
 }).catch(function(err) {

@@ -36,7 +36,7 @@ $ npm start
 
 |  Linux  |   Mac   |  Android  |  Windows  |
 |  :---:  |  :---:  |   :---:   |   :---:   |
-|  PASS   |   PASS  |    PASS   |    TODO   |
+|  PASS   |   PASS  |    PASS   |    PASS   |
 
 ## Result html
 
