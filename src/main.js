@@ -1057,6 +1057,9 @@ var numberTotal = 0;
     htmlStream.end();
     csvStream.end();
 
+    command = adbPath + " kill-server";
+    execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+
     driver = new Builder()
         .forBrowser("chrome")
         .setChromeOptions(new Chrome.Options().setChromeBinaryPath(chromiumPath))
