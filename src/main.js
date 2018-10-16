@@ -51,7 +51,7 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
 var csvFilePath = outputPath + "/report-check-result.csv";
 csvStream.pipe(fs.createWriteStream(csvFilePath));
 
-var remoteURL, driver, backendModel, chromeOption, command, androidSN, loadPageCount, adbPath;
+var remoteURL, driver, backendModel, chromeOption, command, androidSN, loadPageCount, adbPath, htmlPath;
 var backendModels = [
     "Mac-MPS",
     "Mac-BNNS",
@@ -1062,7 +1062,6 @@ var numberTotal = 0;
         .setChromeOptions(new Chrome.Options().setChromeBinaryPath(chromiumPath))
         .build();
 
-    let htmlPath;
     if (sys == "Windows_NT") {
         htmlPath = "file://" + process.cwd() + "\\output\\report-check-result.html";
     } else {
