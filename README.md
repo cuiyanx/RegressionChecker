@@ -22,6 +22,13 @@ This is an automation tool kit to check regression easily for developers when su
      "chromiumPath": "/User/test/Downloads/Chromium.app/Contents/MacOS/Chromium"
    }
 ```
+   or
+```
+   {
+     "platform": "Windows",
+     "chromiumPath": "..\\Chrome-bin\\chrome.exe"
+   }
+```
    You need modify these two fields for the different platforms:
    + `platform`: `{string}`, target platform, support Android, Mac, Linux and Windows
    + `chromiumPath`: `{string}`, the installed chromium path on the target device. If the platform is `Android`, there is no need to set `chromiumPath`.
