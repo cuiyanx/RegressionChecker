@@ -51,7 +51,7 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
 var csvFilePath = outputPath + "/report-check-result.csv";
 csvStream.pipe(fs.createWriteStream(csvFilePath));
 
-var remoteURL, driver, backendModel, chromeOption, command, androidSN, loadPageCount, adbPath, htmlPath;
+var remoteURL, driver, backendModel, chromeOption, command, androidSN, adbPath, htmlPath;
 var backendModels = [
     "Mac-MPS",
     "Mac-BNNS",
@@ -493,7 +493,7 @@ var numberTotal = 0;
             }
 
             return (actions == baselinejson[backendModel]["total"]);
-        }, 100000).catch(function() {
+        }, 500000).catch(function() {
             RClog("console", "total: " + baselinejson[backendModel]["total"] + " grasp: " + actionCount);
             throw new Error("failed to grasp all test result");
         });
@@ -828,7 +828,6 @@ var numberTotal = 0;
         if (backendModel === "Mac-MPS") {
             if (testPlatform === "Mac") {
                 testBackends.push("Mac-MPS");
-                loadPageCount = 80;
                 remoteURL = "https://brucedai.github.io/nt/testm/index-local.html?backend=mps";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
@@ -839,7 +838,6 @@ var numberTotal = 0;
         } else if (backendModel === "Mac-BNNS") {
             if (testPlatform === "Mac") {
                 testBackends.push("Mac-BNNS");
-                loadPageCount = 80;
                 remoteURL = "https://brucedai.github.io/nt/testm/index-local.html?backend=bnns";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
@@ -850,7 +848,6 @@ var numberTotal = 0;
         } else if (backendModel === "Mac-WASM") {
             if (testPlatform === "Mac") {
                 testBackends.push("Mac-WASM");
-                loadPageCount = 80;
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
@@ -861,7 +858,6 @@ var numberTotal = 0;
         } else if (backendModel === "Mac-WebGL2") {
             if (testPlatform === "Mac") {
                 testBackends.push("Mac-WebGL2");
-                loadPageCount = 80;
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
@@ -872,7 +868,6 @@ var numberTotal = 0;
         } else if (backendModel === "Android-NNAPI") {
             if (testPlatform === "Android") {
                 testBackends.push("Android-NNAPI");
-                loadPageCount = 10;
                 remoteURL = "https://brucedai.github.io/nt/testa/index-local.html";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
@@ -884,7 +879,6 @@ var numberTotal = 0;
         } else if (backendModel === "Android-WASM") {
             if (testPlatform === "Android") {
                 testBackends.push("Android-WASM");
-                loadPageCount = 10;
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
@@ -896,7 +890,6 @@ var numberTotal = 0;
         } else if (backendModel === "Android-WebGL2") {
             if (testPlatform === "Android") {
                 testBackends.push("Android-WebGL2");
-                loadPageCount = 10;
                 remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
@@ -908,7 +901,6 @@ var numberTotal = 0;
         } else if (backendModel === "Windows-clDNN") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-clDNN");
-                loadPageCount = 30;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")
@@ -920,7 +912,6 @@ var numberTotal = 0;
         } else if (backendModel === "Windows-WASM") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-WASM");
-                loadPageCount = 30;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -931,7 +922,6 @@ var numberTotal = 0;
         } else if (backendModel === "Windows-WebGL2") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-WebGL2");
-                loadPageCount = 30;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -942,7 +932,6 @@ var numberTotal = 0;
         } else if (backendModel === "Linux-clDNN") {
             if (testPlatform === "Linux") {
                 testBackends.push("Linux-clDNN");
-                loadPageCount = 30;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")
@@ -954,7 +943,6 @@ var numberTotal = 0;
         } else if (backendModel === "Linux-WASM") {
             if (testPlatform === "Linux") {
                 testBackends.push("Linux-WASM");
-                loadPageCount = 30;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -965,7 +953,6 @@ var numberTotal = 0;
         } else if (backendModel === "Linux-WebGL2") {
             if (testPlatform === "Linux") {
                 testBackends.push("Linux-WebGL2");
-                loadPageCount = 30;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -1001,13 +988,15 @@ var numberTotal = 0;
 
                 RClog("debug", "loadCount: " + loadCount);
 
-                if (loadCount >= loadPageCount) {
+                if (loadCount >= 100) {
                     return true;
                 } else {
                     return false;
                 }
+            } else {
+                return false;
             }
-        }, 100000).then(function() {
+        }, 200000).then(function() {
             RClog("console", "load remote URL is completed, no crash");
         }).catch(function(err) {
             RClog("debug", err);
