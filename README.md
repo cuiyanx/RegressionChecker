@@ -31,7 +31,7 @@ This is an automation tool kit to check regression easily for developers when su
 ```
    You need modify these two fields for the different platforms:
    + `platform`: `{string}`, target platform, support Android, Mac, Linux and Windows
-   + `chromiumPath`: `{string}`, the installed chromium path on the target device. If the platform is `Android`, there is no need to set `chromiumPath`.
+   + `chromiumPath`: `{string}`, the installed chromium path on the target device. If the platform is `Android`, there is set chromiumPath of running platform. Because that will be used to display html page.
 
 ## Run Tests
 
