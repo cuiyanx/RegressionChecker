@@ -39,6 +39,12 @@ This is an automation tool kit to check regression easily for developers when su
 $ npm start
 ```
 
+## Run creating baseline data tool
+
+```sh
+$ npm run baseline
+```
+
 ## Support Platforms
 
 |  Linux  |   Mac   |  Android  |  Windows  |

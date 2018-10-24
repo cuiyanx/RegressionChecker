@@ -4,7 +4,8 @@
   "description": "Test tool for checking regression when submitting Web ML PR.",
   "main": "./src/main.js",
   "scripts": {
-    "start": "node ./src/main.js"
+    "start": "node ./src/main.js",
+    "baseline": "node ./src/create-baseline.js"
   },
   "directories": {
     "output": "output",
