@@ -1,8 +1,19 @@
 const csv = require("../node_modules/fast-csv");
 const fs = require("fs");
+const os = require("os");
 
-var baseLineDataPath = "./baseline/baseline_results/";
-var csvFilePath = "./baseline/unitTestsBaseline.csv";
+if (os.type() == "Windows_NT") {
+    var baseLineDataPath = ".\\baseline\\baseline_results\\";
+    var csvFilePath = ".\\baseline\\unitTestsBaseline.csv";
+    var readJSONPath = ".\\baseline\\baseline_results\\config.json";
+    var writeJSONPath = ".\\baseline\\baseline.config.json";
+} else {
+    var baseLineDataPath = "./baseline/baseline_results/";
+    var csvFilePath = "./baseline/unitTestsBaseline.csv";
+    var readJSONPath = "./baseline/baseline_results/config.json";
+    var writeJSONPath = "./baseline/baseline.config.json";
+}
+
 var csvCount = 0;
 var baseLineData = new Map();
 var baseLineJSON = new Map();
@@ -28,7 +39,7 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
 
 csvStream.pipe(fs.createWriteStream(csvFilePath));
 
-var readJSON = JSON.parse(fs.readFileSync("./baseline/baseline_results/config.json"));
+var readJSON = JSON.parse(fs.readFileSync(readJSONPath));
 baseLineJSON["Version"] = new Map();
 baseLineJSON["Version"]["chromium"] = readJSON.Version.chromium;
 baseLineJSON["Version"]["polyfill"] = readJSON.Version.polyfill;
@@ -150,7 +161,7 @@ fs.readdir(baseLineDataPath, function(err, files) {
                             csvStream.write(value);
                         }
 
-                        fs.writeFileSync("./baseline/baseline.config.json", JSON.stringify(baseLineJSON, null, 4));
+                        fs.writeFileSync(writeJSONPath, JSON.stringify(baseLineJSON, null, 4));
                     }
                 });
             }
