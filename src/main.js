@@ -834,11 +834,12 @@ var numberTotal = 0;
         graspData["fail"] = 0;
         graspData["block"] = 0;
         continueFlag = false;
+        remoteURL = "https://brucedai.github.io/nt/test/index-local.html";
 
         if (backendModel === "Mac-MPS") {
             if (testPlatform === "Mac") {
                 testBackends.push("Mac-MPS");
-                remoteURL = "https://brucedai.github.io/nt/testm/index-local.html?backend=mps";
+                remoteURL = remoteURL + "?backend=mps";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML");
@@ -848,7 +849,7 @@ var numberTotal = 0;
         } else if (backendModel === "Mac-BNNS") {
             if (testPlatform === "Mac") {
                 testBackends.push("Mac-BNNS");
-                remoteURL = "https://brucedai.github.io/nt/testm/index-local.html?backend=bnns";
+                remoteURL = remoteURL + "?backend=bnns";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML");
@@ -858,7 +859,7 @@ var numberTotal = 0;
         } else if (backendModel === "Mac-WASM") {
             if (testPlatform === "Mac") {
                 testBackends.push("Mac-WASM");
-                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
+                remoteURL = remoteURL + "?backend=wasm";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -868,7 +869,7 @@ var numberTotal = 0;
         } else if (backendModel === "Mac-WebGL2") {
             if (testPlatform === "Mac") {
                 testBackends.push("Mac-WebGL2");
-                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
+                remoteURL = remoteURL + "?backend=webgl2";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -878,7 +879,7 @@ var numberTotal = 0;
         } else if (backendModel === "Android-NNAPI") {
             if (testPlatform === "Android") {
                 testBackends.push("Android-NNAPI");
-                remoteURL = "https://brucedai.github.io/nt/testa/index-local.html";
+                remoteURL = remoteURL + "?backend=nnapi";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
                     .addArguments("--enable-features=WebML")
@@ -889,7 +890,7 @@ var numberTotal = 0;
         } else if (backendModel === "Android-WASM") {
             if (testPlatform === "Android") {
                 testBackends.push("Android-WASM");
-                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
+                remoteURL = remoteURL + "?backend=wasm";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
                     .addArguments("--disable-features=WebML")
@@ -900,7 +901,7 @@ var numberTotal = 0;
         } else if (backendModel === "Android-WebGL2") {
             if (testPlatform === "Android") {
                 testBackends.push("Android-WebGL2");
-                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
+                remoteURL = remoteURL + "?backend=webgl2";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
                     .addArguments("--disable-features=WebML")
@@ -911,62 +912,62 @@ var numberTotal = 0;
         } else if (backendModel === "Windows-clDNN") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-clDNN");
+                remoteURL = remoteURL + "?backend=cldnn";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")
                     .addArguments("--no-sandbox");
-                remoteURL = "https://brucedai.github.io/nt/testa/index-local.html?backend=cldnn";
             } else {
                 continue;
             }
         } else if (backendModel === "Windows-WASM") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-WASM");
+                remoteURL = remoteURL + "?backend=wasm";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
-                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
             } else {
                 continue;
             }
         } else if (backendModel === "Windows-WebGL2") {
             if (testPlatform === "Windows") {
                 testBackends.push("Windows-WebGL2");
+                remoteURL = remoteURL + "?backend=webgl2";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
-                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
             } else {
                 continue;
             }
         } else if (backendModel === "Linux-clDNN") {
             if (testPlatform === "Linux") {
                 testBackends.push("Linux-clDNN");
+                remoteURL = remoteURL + "?backend=cldnn";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")
                     .addArguments("--no-sandbox");
-                remoteURL = "https://brucedai.github.io/nt/testa/index-local.html?backend=cldnn";
             } else {
                 continue;
             }
         } else if (backendModel === "Linux-WASM") {
             if (testPlatform === "Linux") {
                 testBackends.push("Linux-WASM");
+                remoteURL = remoteURL + "?backend=wasm";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
-                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=wasm";
             } else {
                 continue;
             }
         } else if (backendModel === "Linux-WebGL2") {
             if (testPlatform === "Linux") {
                 testBackends.push("Linux-WebGL2");
+                remoteURL = remoteURL + "?backend=webgl2";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
-                remoteURL = "https://brucedai.github.io/nt/test/index-local.html?backend=webgl2";
             } else {
                 continue;
             }
