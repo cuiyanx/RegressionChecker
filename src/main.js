@@ -170,17 +170,23 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
 
 var continueFlag = false;
 var debugFlag = false;
+var timeFlag = true;
 function RClog (target, message) {
     if (target == "console") {
         console.log("RC -- " + message);
     } else if (target == "debug") {
         if (debugFlag) console.log("RC -- " + message);
+    } else if (target == "time") {
+        if (timeFlag) {
+            console.log("RC -- running time: " + process.uptime() + "s");
+        }
     } else {
         throw new Error("Not support target '" + target + "'");
     }
 }
 
 RClog("console", "checking runtime environment....");
+RClog("time", "mark");
 
 if (testPlatform == "Android") {
     RClog("console", "runtime environment: android");
@@ -321,6 +327,8 @@ if (testPlatform == "Android") {
         }
     }
 }
+
+RClog("time", "mark");
 
 var numberPasstoFail = 0;
 var numberFailtoPass = 0;
@@ -816,6 +824,8 @@ var numberTotal = 0;
         htmlStream.write("</html>\n");
     }
 
+    RClog("time", "mark");
+
     for (let i = 0; i < backendModels.length; i++) {
         chromeOption = new Chrome.Options();
         backendModel = backendModels[i];
@@ -974,6 +984,8 @@ var numberTotal = 0;
             throw new Error("failed to load web page");
         });
 
+        RClog("time", "mark");
+
         let loadString = null;
         let loadCount = 0;
         await driver.wait(async function() {
@@ -1010,6 +1022,8 @@ var numberTotal = 0;
             }
         });
 
+        RClog("time", "mark");
+
         if (continueFlag) {
             await driver.sleep(2000);
             await driver.quit();
@@ -1023,6 +1037,8 @@ var numberTotal = 0;
         RClog("console", "checking....");
 
         await graspResult();
+
+        RClog("time", "mark");
 
         pageDataTotal.get(backendModel).get("grasp").push(graspData["total"]);
         pageDataTotal.get(backendModel).get("grasp").push(graspData["pass"]);
@@ -1061,6 +1077,8 @@ var numberTotal = 0;
     } else {
         htmlPath = "file://" + process.cwd() + "/output/report-check-result.html";
     }
+
+    RClog("time", "mark");
 
     await driver.get(htmlPath);
 })().then(function() {
