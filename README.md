@@ -1,13 +1,12 @@
 # RegressionChecker
-This is an automation tool kit to check regression easily for developers when submitting Web ML API PRs with high quality(avoiding new problems such as crash, freeze, etc.). 
+This is an automation tool kit to check regression easily for developers when submitting Web ML API PRs with high quality(avoiding new problems such as crash, freeze, etc.).
 
 ## Prerequisites
 * Chromium build is required to be installed on the target device before the test
+* For checking PRs relevant to Android platform, host pc needs install chrome or chromium browser firstly.
 
-## Get Code
+## Install
 ```sh
-   $ git clone https://github.com/cuiyanx/RegressionChecker.git
-   $ cd RegressionChecker
    $ npm install
 ```
    If installing `chromedriver` fails, you can install `chromedriver` with this command:
@@ -15,7 +14,7 @@ This is an automation tool kit to check regression easily for developers when su
       $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
 
 ## Set Configurations
-   There are two fields in the config.json:
+   There are two fields in the config.json, for example:
 ```
    {
      "platform": "Mac",
@@ -26,23 +25,17 @@ This is an automation tool kit to check regression easily for developers when su
 ```
    {
      "platform": "Windows",
-     "chromiumPath": "..\\Chrome-bin\\chrome.exe"
+     "chromiumPath": "C:\\test\\win_x64_SUCCEED\\Chrome-bin\\chrome.exe"
    }
 ```
    You need modify these two fields for the different platforms:
-   + `platform`: `{string}`, target platform, support Android, Mac, Linux and Windows
-   + `chromiumPath`: `{string}`, the installed chromium path on the target device. If the platform is `Android`, there is set chromiumPath of running platform. Because that will be used to display html page.
+   + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**
+   + **_chromiumPath_**: `{string}`,**Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results
 
 ## Run Tests
 
 ```sh
 $ npm start
-```
-
-## Run creating baseline data tool
-
-```sh
-$ npm run baseline
 ```
 
 ## Support Platforms
