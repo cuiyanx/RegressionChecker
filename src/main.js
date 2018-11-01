@@ -53,19 +53,19 @@ csvStream.pipe(fs.createWriteStream(csvFilePath));
 
 var remoteURL, driver, backendModel, chromeOption, command, androidSN, adbPath, htmlPath;
 var backendModels = [
-    "Mac-MPS",
-    "Mac-BNNS",
     "Mac-WASM",
     "Mac-WebGL2",
-    "Android-NNAPI",
+    "Mac-MPS",
+    "Mac-BNNS",
     "Android-WASM",
     "Android-WebGL2",
-    "Windows-clDNN",
+    "Android-NNAPI",
     "Windows-WASM",
     "Windows-WebGL2",
-    "Linux-clDNN",
+    "Windows-clDNN",
     "Linux-WASM",
-    "Linux-WebGL2"
+    "Linux-WebGL2",
+    "Linux-clDNN"
 ];
 
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
