@@ -987,28 +987,12 @@ var numberTotal = 0;
 
         RClog("time", "mark");
 
-        let loadString = null;
-        let loadCount = 0;
-        await driver.wait(async function() {
-            if (until.elementLocated(By.xpath("//ul[@id='mocha-stats']/li[@class='duration']"))) {
-                let loadStringTmp = await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='duration']//em")).getText();
-                if (loadStringTmp == loadString) {
-                    loadCount = loadCount + 1;
-                } else {
-                    loadString = loadStringTmp;
-                    loadCount = 0;
-                }
+        await driver.wait(function() {
+            driver.executeScript("return window.mochaFinish;").then(function(flag) {
+                RClog("debug", flag);
+            });
 
-                RClog("debug", "loadCount: " + loadCount);
-
-                if (loadCount >= 100) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+            return driver.executeScript("return window.mochaFinish;");
         }, 200000).then(function() {
             RClog("console", "load remote URL is completed, no crash");
         }).catch(function(err) {
