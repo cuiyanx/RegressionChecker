@@ -987,12 +987,16 @@ var numberTotal = 0;
 
         RClog("time", "mark");
 
-        await driver.wait(function() {
-            driver.executeScript("return window.mochaFinish;").then(function(flag) {
+        await driver.wait(async function() {
+            await driver.executeScript("return window.mochaFinish;").then(function(flag) {
                 RClog("debug", flag);
+            }).catch(function(err) {
+                throw err;
             });
 
-            return driver.executeScript("return window.mochaFinish;");
+            return driver.executeScript("return window.mochaFinish;").catch(function(err) {
+                throw err;
+            });
         }, 200000).then(function() {
             RClog("console", "load remote URL is completed, no crash");
         }).catch(function(err) {
@@ -1048,6 +1052,15 @@ var numberTotal = 0;
     csvStream.end();
 
     if (testPlatform == "Android") {
+        driver = new Builder()
+            .forBrowser("chrome")
+            .setChromeOptions(new Chrome.Options().androidPackage("org.chromium.chrome").androidDeviceSerial(androidSN))
+            .build();
+
+        await driver.sleep(3000);
+        driver.quit();
+        await driver.sleep(3000);
+
         command = adbPath + " kill-server";
         execSync(command, {encoding: "UTF-8", stdio: "pipe"});
     }
