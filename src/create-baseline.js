@@ -25,16 +25,16 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
     "Mac-MPS": row.MMPS,
     "Mac-BNNS": row.MBNNS,
     "Mac-WASM": row.MWASM,
-    "Mac-WebGL2": row.MWebGL2,
+    "Mac-WebGL": row.MWebGL,
     "Android-NNAPI": row.ANNAPI,
     "Android-WASM": row.AWASM,
-    "Android-WebGL2": row.AWebGL2,
+    "Android-WebGL": row.AWebGL,
     "Windows-clDNN": row.WclDNN,
     "Windows-WASM": row.WWASM,
-    "Windows-WebGL2": row.WWebGL2,
+    "Windows-WebGL": row.WWebGL,
     "Linux-clDNN": row.LclDNN,
     "Linux-WASM": row.LWASM,
-    "Linux-WebGL2": row.LWebGL2
+    "Linux-WebGL": row.LWebGL
 }});
 
 csvStream.pipe(fs.createWriteStream(csvFilePath));
@@ -69,9 +69,9 @@ fs.readdir(baseLineDataPath, function(err, files) {
                                 backend = "Mac-WASM";
                                 csvRow = "MWASM";
                                 break;
-                            case "webgl2":
-                                backend = "Mac-WebGL2";
-                                csvRow = "MWebGL2";
+                            case "webgl":
+                                backend = "Mac-WebGL";
+                                csvRow = "MWebGL";
                                 break;
                         };
                         break;
@@ -85,9 +85,9 @@ fs.readdir(baseLineDataPath, function(err, files) {
                                 backend = "Android-WASM";
                                 csvRow = "AWASM";
                                 break;
-                            case "webgl2":
-                                backend = "Android-WebGL2";
-                                csvRow = "AWebGL2";
+                            case "webgl":
+                                backend = "Android-WebGL";
+                                csvRow = "AWebGL";
                                 break;
                         };
                         break;
@@ -101,9 +101,9 @@ fs.readdir(baseLineDataPath, function(err, files) {
                                 backend = "Windows-WASM";
                                 csvRow = "WWASM";
                                 break;
-                            case "webgl2":
-                                backend = "Windows-WebGL2";
-                                csvRow = "WWebGL2";
+                            case "webgl":
+                                backend = "Windows-WebGL";
+                                csvRow = "WWebGL";
                                 break;
                         };
                         break;
@@ -117,9 +117,9 @@ fs.readdir(baseLineDataPath, function(err, files) {
                                 backend = "Linux-WASM";
                                 csvRow = "LWASM";
                                 break;
-                            case "webgl2":
-                                backend = "Linux-WebGL2";
-                                csvRow = "LWebGL2";
+                            case "webgl":
+                                backend = "Linux-WebGL";
+                                csvRow = "LWebGL";
                                 break;
                         };
                         break;
