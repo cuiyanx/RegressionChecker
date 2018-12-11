@@ -261,9 +261,6 @@ if (testPlatform == "Android") {
         throw new Error("chromium to be tested is not installed correctly");
     }
 
-    command = adbPath + " -s " + androidSN + " shell am force-stop com.android.chrome";
-    execSync(command, {encoding: "UTF-8", stdio: "pipe"});
-
     command = adbPath + " -s " + androidSN + " shell am force-stop org.chromium.chrome";
     execSync(command, {encoding: "UTF-8", stdio: "pipe"});
 } else if (testPlatform == "Linux") {
@@ -276,10 +273,17 @@ if (testPlatform == "Android") {
     }
 
     try {
-        command = "killall chrome";
-        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+        command = "ps aux | grep chrome";
+        let Lines = execSync(command, {encoding: "UTF-8", stdio: "pipe"}).trim().split("\n");
+        for (let line of Lines) {
+            let infos = line.trim().split(/\s+/);
+            if (infos[10] == "/opt/chromium.org/chromium-unstable/chrome") {
+                command = "kill " + infos[1];
+                execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+            }
+        }
     } catch(e) {
-        if (e.message.search("no process found") == -1) {
+        if (e.message.search("No such process") == -1) {
             throw e;
         }
     }
@@ -300,15 +304,6 @@ if (testPlatform == "Android") {
             throw e;
         }
     }
-
-    try {
-        command = "killall 'Google Chrome'";
-        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
-    } catch(e) {
-        if (e.message.search("No matching processes") == -1) {
-            throw e;
-        }
-    }
 } else if (testPlatform == "Windows") {
     RClog("console", "runtime environment: Windows");
 
@@ -319,8 +314,19 @@ if (testPlatform == "Android") {
     }
 
     try {
-        command = "taskkill /im chrome.exe /f";
-        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+        command = "wmic process where name='chrome.exe' get processid";
+        let idLines = execSync(command, {encoding: "UTF-8", stdio: "pipe"}).trim().split("\n");
+        for (let idLine of idLines) {
+            idLine = idLine.trim();
+            if (idLine !== "ProcessId") {
+                command = "wmic process where processid='" + idLine + "' get executablepath";
+                let pathLine = execSync(command, {encoding: "UTF-8", stdio: "pipe"}).trim().split("\n");
+                if (pathLine[1] == chromiumPath) {
+                    command = "wmic process where processid='" + idLine + "' delete";
+                    execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+                }
+            }
+        }
     } catch(e) {
         if (e.message.search("not found") == -1) {
             throw e;
