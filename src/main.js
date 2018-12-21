@@ -97,6 +97,24 @@ for (let i = 0; i < backendModels.length; i++) {
 var testBackends = new Array();
 var crashData = new Array();
 /**
+ * newTestCaseData = {
+ *     "caseCount": value,
+ *     "backends": {
+ *         backend1: true,
+ *         backend2: true
+ *     },
+ *     testCase: {
+ *         "title": title,
+ *         "caseID": caseID,
+ *         "backend": [backend1, backend2, backend3]
+ *     }
+ * }
+ */
+var newTestCaseData = new Map();
+newTestCaseData.set("caseCount", 0);
+newTestCaseData.set("backends", new Map());
+
+/**
  * graspDataSummary = [
  *     total: value,
  *     pass: value,
@@ -105,6 +123,14 @@ var crashData = new Array();
  * ]
  */
 var graspDataSummary = new Array();
+/**
+ * baseLineDataSummary = [
+ *     model-name1: count1,
+ *     model-name2: count2,
+ *     model-name3: count3
+ * ]
+ */
+var baseLineDataSummary = new Map();
 
 csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
     baseLineData.set(data[0] + "-" + data[1], new Map(
@@ -135,6 +161,7 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             newData = newData + "/" + dataArray[dataCount];
         }
     }
+
     baseLineData.set(data[0] + "-" + newData + "-" + data[2], new Map(
         [
             ["Feature", data[0]],
@@ -155,9 +182,20 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Linux-WebGL", data[15]]
         ]
     ));
+
+    if (baseLineDataSummary.has(data[0] + "-" + newData)) {
+        baseLineDataSummary.set(data[0] + "-" + newData, baseLineDataSummary.get(data[0] + "-" + newData) + 1);
+    } else {
+        baseLineDataSummary.set(data[0] + "-" + newData, 1);
+    }
 }).on("end", function() {
     for (let key of baseLineData.keys()) {
         RClog("debug", "key: " + key);
+    }
+
+    for (let key of baseLineDataSummary.keys()) {
+        RClog("debug", "key: " + key);
+        RClog("debug", "value: " + baseLineDataSummary.get(key));
     }
 });
 
@@ -377,11 +415,11 @@ var matchFlag = null;
         return Text.slice(0, length);
     }
 
-    var checkResult = async function(element, count, title, module) {
+    var checkResult = async function(element, count, title, module, flag) {
         let caseStatus = await getCaseStatus(element);
         let caseName, key;
 
-        if (matchFlag == "macth") {
+        if (flag) {
             key = title + "-" + module + "/" + count;
             caseName = baseLineData.get(key).get("TestCase");
         } else {
@@ -399,10 +437,28 @@ var matchFlag = null;
                 }
 
                 RClog("console", title + "-" + module + "-" + caseName);
-                RClog("console", baseLineStatus + " : " + caseStatus);
+                RClog("console", "baseLineStatus: " + baseLineStatus + " - caseStatus: " + caseStatus);
             }
         } else {
-            throw new Error("no match test case: " + title + "-" + module + "-" + caseName);
+            RClog("console", "no match test case: " + title + "-" + module + "-" + caseName);
+
+            if (matchFlag == "macth" || matchFlag == "delete") {
+                throw new Error("no match test case: " + title + "-" + module + "-" + caseName);
+            } else {
+                if (!newTestCaseData.get("backends").has(backendModel)) {
+                    newTestCaseData.get("backends").set(backendModel, true);
+                }
+
+                if (!newTestCaseData.has(title + "-" + module + "-" + caseName)) {
+                    newTestCaseData.set(title + "-" + module + "-" + caseName, new Map());
+                    newTestCaseData.get(title + "-" + module + "-" + caseName).set("title", title);
+                    newTestCaseData.get(title + "-" + module + "-" + caseName).set("caseID", module + "-" + caseName);
+                    newTestCaseData.get(title + "-" + module + "-" + caseName).set("backend", new Map());
+                    newTestCaseData.set("caseCount", newTestCaseData.get("caseCount") + 1);
+                }
+
+                newTestCaseData.get(title + "-" + module + "-" + caseName).get("backend").set(backendModel, true);
+            }
         }
     }
 
@@ -433,7 +489,7 @@ var matchFlag = null;
             }
 
             RClog("console", "not match base line data: compatibility mode");
-            RClog("console", "will too slow, because grasping test case name");
+            RClog("console", "will too slow, because grasping more information");
         }
 
         await driver.findElements(By.xpath("//ul[@id='mocha-report']/li[@class='suite']")).then(function(arrayTitles) {
@@ -452,8 +508,17 @@ var matchFlag = null;
                                                                  "@class='test pass medium']")).then(async function(arrayCase) {
                                 RClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
 
+                                let modeFlag;
+                                if (baseLineDataSummary.get(title + "-" + module) == arrayCase.length) {
+                                    modeFlag = true;
+                                    RClog("debug", title + "-" + module + ": match, fast search mode");
+                                } else {
+                                    modeFlag = false;
+                                    RClog("console", title + "-" + module + ": not match, carefully search mode");
+                                }
+
                                 for (let k = 0; k < arrayCase.length; k++) {
-                                    await checkResult(arrayCase[k], k + 1, title, module).then(function() {
+                                    await checkResult(arrayCase[k], k + 1, title, module, modeFlag).then(function() {
                                         actions = actions + 1;
                                     });
                                 }
@@ -470,8 +535,17 @@ var matchFlag = null;
                                                                           "@class='test pass medium']")).then(async function(arrayCase) {
                                         RClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
 
+                                        let modeFlag;
+                                        if (baseLineDataSummary.get(title + "-" + module) == arrayCase.length) {
+                                            modeFlag = true;
+                                            RClog("debug", title + "-" + module + ": match, fast search mode");
+                                        } else {
+                                            modeFlag = false;
+                                            RClog("console", title + "-" + module + ": not match, carefully search mode");
+                                        }
+
                                         for (let k = 0; k < arrayCase.length; k++) {
-                                            await checkResult(arrayCase[k], k + 1, title, module).then(function() {
+                                            await checkResult(arrayCase[k], k + 1, title, module, modeFlag).then(function() {
                                                 actions = actions + 1;
                                             });
                                         }
@@ -559,13 +633,13 @@ var matchFlag = null;
         htmlStream.write(space + "    <div>Chromium version: " + versionChromium + "</div>\n");
         htmlStream.write(space + "    <div>Webml-polyfill version: " + versionPolyfill + "</div>\n");
         htmlStream.write(space + "</div>\n");
+
+        htmlStream.write(space + "<hr />\n");
     }
 
-    var createHtmlBodyContainerWarnning = function(space) {
-        htmlStream.write(space + "<hr />\n");
-
+    var createHtmlBodyContainerCrash = function(space) {
         if (crashData.length !== 0) {
-            htmlStream.write(space + "<div class='warnning' id='option_div'>\n");
+            htmlStream.write(space + "<div class='warnning' id='option_Crash'>\n");
             htmlStream.write(space + "  <h3>Warnning:</h3>\n");
 
             for (let i = 0; i < crashData.length; i++) {
@@ -573,7 +647,63 @@ var matchFlag = null;
                                  crashData[i] + ", please double check.</p>\n");
             }
 
+            htmlStream.write(space + "  <hr />\n");
             htmlStream.write(space + "</div>\n");
+        }
+    }
+
+    var createHtmlBodyContainerNewTestCase = function(space) {
+        if (newTestCaseData.get("caseCount") !== 0) {
+            htmlStream.write(space + "<div class='warnning' id='option_New'>\n");
+            htmlStream.write(space + "  <h3>Warnning:</h3>\n");
+            htmlStream.write(space + "  <p id='NewTestCaseText'>There are " + newTestCaseData.get("caseCount") +
+                             " test cases out of base line data, please double check.</p>\n");
+            htmlStream.write(space + "</div>\n");
+
+            htmlStream.write(space + "<div class='tab-box'>\n");
+            htmlStream.write(space + "  <div class='active' id='tab_box'>\n");
+            htmlStream.write(space + "    <table>\n");
+            htmlStream.write(space + "      <thead>\n");
+            htmlStream.write(space + "        <tr>\n");
+            htmlStream.write(space + "          <th>Feature\n");
+            htmlStream.write(space + "          </th>\n");
+            htmlStream.write(space + "          <th>TestCase\n");
+            htmlStream.write(space + "          </th>\n");
+
+            for (let backend of newTestCaseData.get("backends").keys()) {
+                htmlStream.write(space + "          <th>" + backend + "\n");
+                htmlStream.write(space + "          </th>\n");
+            }
+
+            htmlStream.write(space + "        </tr>\n");
+            htmlStream.write(space + "      </thead>\n");
+            htmlStream.write(space + "      <tbody>\n");
+
+            for (let caseName of newTestCaseData.keys()) {
+                if (caseName !== "caseCount" && caseName !== "backends") {
+                    htmlStream.write(space + "        <td >" + newTestCaseData.get(caseName).get("title") + "\n");
+                    htmlStream.write(space + "        </td>\n");
+                    htmlStream.write(space + "        <td >" + newTestCaseData.get(caseName).get("caseID") + "\n");
+                    htmlStream.write(space + "        </td>\n");
+
+                    for (let backend of newTestCaseData.get("backends").keys()) {
+                        if (newTestCaseData.get(caseName).get("backend").has(backend)) {
+                            htmlStream.write(space + "        <td class='pass'>true\n");
+                            htmlStream.write(space + "        </td>\n");
+                        } else {
+                            htmlStream.write(space + "        <td class='fail'>false\n");
+                            htmlStream.write(space + "        </td>\n");
+                        }
+                    }
+                }
+            }
+
+            htmlStream.write(space + "      </tbody>\n");
+            htmlStream.write(space + "    </table>\n");
+            htmlStream.write(space + "  </div>\n");
+            htmlStream.write(space + "</div>\n");
+
+            htmlStream.write(space + "<hr />\n");
         }
     }
 
@@ -757,7 +887,8 @@ var matchFlag = null;
         htmlStream.write(space + "<div class='container'>\n");
 
         createHtmlBodyContainerVersion(space + "  ");
-        createHtmlBodyContainerWarnning(space + "  ");
+        createHtmlBodyContainerCrash(space + "  ");
+        createHtmlBodyContainerNewTestCase(space + "  ");
         createHtmlBodyContainerSuggest(space + "  ");
         createHtmlBodyContainerResult(space + "  ");
 
