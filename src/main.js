@@ -106,7 +106,11 @@ var crashData = new Array();
  *     testCase: {
  *         "title": title,
  *         "caseID": caseID,
- *         "backend": [backend1, backend2, backend3]
+ *         "backend": {
+ *             backend1: caseStatus1,
+ *             backend2: caseStatus2,
+ *             backend3: caseStatus3
+ *         }
  *     }
  * }
  */
@@ -381,18 +385,14 @@ var matchFlag = null;
             let graspCaseStatus = null;
             if (message == "test pass pending") {
                 graspCaseStatus = "N/A";
-                graspDataSummary["block"] = graspDataSummary["block"] + 1
             } else if (message == "test pass fast" || message == "test pass slow" || message == "test pass medium") {
                 graspCaseStatus = "Pass";
-                graspDataSummary["pass"] = graspDataSummary["pass"] + 1
             } else if (message == "test fail") {
                 graspCaseStatus = "Fail";
-                graspDataSummary["fail"] = graspDataSummary["fail"] + 1
             } else {
                 throw new Error("not support case status");
             }
 
-            graspDataSummary["total"] = graspDataSummary["total"] + 1;
             return graspCaseStatus;
         });
     }
@@ -428,6 +428,15 @@ var matchFlag = null;
         }
 
         if (baseLineData.has(key)) {
+            graspDataSummary["total"] = graspDataSummary["total"] + 1;
+            if (caseStatus == "Pass") {
+                graspDataSummary["pass"] = graspDataSummary["pass"] + 1;
+            } else if (caseStatus == "Fail") {
+                graspDataSummary["fail"] = graspDataSummary["fail"] + 1;
+            } else if (caseStatus == "N/A") {
+                graspDataSummary["block"] = graspDataSummary["block"] + 1;
+            }
+
             let baseLineStatus = baseLineData.get(key).get(backendModel);
             if (caseStatus !== baseLineStatus) {
                 if (baseLineStatus == "Pass" && caseStatus == "Fail") {
@@ -457,7 +466,7 @@ var matchFlag = null;
                     newTestCaseData.set("caseCount", newTestCaseData.get("caseCount") + 1);
                 }
 
-                newTestCaseData.get(title + "-" + module + "-" + caseName).get("backend").set(backendModel, true);
+                newTestCaseData.get(title + "-" + module + "-" + caseName).get("backend").set(backendModel, caseStatus);
             }
         }
     }
@@ -565,7 +574,7 @@ var matchFlag = null;
             }
 
             return (actions == graspTotal);
-        }, 500000).then(function() {
+        }, 5000000).then(function() {
             RClog("console", "grasp all test case: " + graspTotal);
         }).catch(function() {
             RClog("console", "total: " + graspTotal + " grasp: " + actionCount);
@@ -590,6 +599,7 @@ var matchFlag = null;
     .tab-menu ul li:hover {cursor: pointer;}\n\
     .tab-box div {display:none;}\n\
     .tab-box div.active {display:block;}\n\
+    .tab-box div.warnning {display:block;}\n\
     table {border: 1px solid #ddd; border-spacing:0;}\n\
     table tr th {border: 1px solid #000;background-color: #B0C4DE;}\n\
     table tr td {border: 1px solid #ddd}\n\
@@ -654,54 +664,59 @@ var matchFlag = null;
 
     var createHtmlBodyContainerNewTestCase = function(space) {
         if (newTestCaseData.get("caseCount") !== 0) {
+            htmlStream.write(space + "<hr />\n");
+
             htmlStream.write(space + "<div class='warnning' id='option_New'>\n");
             htmlStream.write(space + "  <h3>Warnning:</h3>\n");
             htmlStream.write(space + "  <p id='NewTestCaseText'>There are " + newTestCaseData.get("caseCount") +
                              " test cases out of base line data, please double check.</p>\n");
             htmlStream.write(space + "</div>\n");
 
-            htmlStream.write(space + "<div class='tab-box'>\n");
-            htmlStream.write(space + "  <div class='active' id='tab_box'>\n");
-            htmlStream.write(space + "    <table>\n");
-            htmlStream.write(space + "      <thead>\n");
-            htmlStream.write(space + "        <tr>\n");
-            htmlStream.write(space + "          <th>Feature\n");
-            htmlStream.write(space + "          </th>\n");
-            htmlStream.write(space + "          <th>TestCase\n");
-            htmlStream.write(space + "          </th>\n");
+            htmlStream.write(space + "<table>\n");
+            htmlStream.write(space + "  <thead>\n");
+            htmlStream.write(space + "    <tr>\n");
+            htmlStream.write(space + "      <th>Feature\n");
+            htmlStream.write(space + "      </th>\n");
+            htmlStream.write(space + "      <th>TestCase\n");
+            htmlStream.write(space + "      </th>\n");
 
             for (let backend of newTestCaseData.get("backends").keys()) {
-                htmlStream.write(space + "          <th>" + backend + "\n");
-                htmlStream.write(space + "          </th>\n");
+                htmlStream.write(space + "      <th>" + backend + "\n");
+                htmlStream.write(space + "      </th>\n");
             }
 
-            htmlStream.write(space + "        </tr>\n");
-            htmlStream.write(space + "      </thead>\n");
-            htmlStream.write(space + "      <tbody>\n");
+            htmlStream.write(space + "    </tr>\n");
+            htmlStream.write(space + "  </thead>\n");
+            htmlStream.write(space + "  <tbody>\n");
 
             for (let caseName of newTestCaseData.keys()) {
                 if (caseName !== "caseCount" && caseName !== "backends") {
-                    htmlStream.write(space + "        <td >" + newTestCaseData.get(caseName).get("title") + "\n");
-                    htmlStream.write(space + "        </td>\n");
-                    htmlStream.write(space + "        <td >" + newTestCaseData.get(caseName).get("caseID") + "\n");
-                    htmlStream.write(space + "        </td>\n");
+                    htmlStream.write(space + "    <tr >\n");
+                    htmlStream.write(space + "      <td >" + newTestCaseData.get(caseName).get("title") + "\n");
+                    htmlStream.write(space + "      </td>\n");
+                    htmlStream.write(space + "      <td >" + newTestCaseData.get(caseName).get("caseID") + "\n");
+                    htmlStream.write(space + "      </td>\n");
 
                     for (let backend of newTestCaseData.get("backends").keys()) {
                         if (newTestCaseData.get(caseName).get("backend").has(backend)) {
-                            htmlStream.write(space + "        <td class='pass'>true\n");
-                            htmlStream.write(space + "        </td>\n");
-                        } else {
-                            htmlStream.write(space + "        <td class='fail'>false\n");
-                            htmlStream.write(space + "        </td>\n");
+                            if (newTestCaseData.get(caseName).get("backend").get(backend) == "Pass") {
+                                htmlStream.write(space + "      <td class='pass'>" +
+                                                 newTestCaseData.get(caseName).get("backend").get(backend) + "\n");
+                                htmlStream.write(space + "      </td>\n");
+                            } else {
+                                htmlStream.write(space + "      <td class='fail'>" +
+                                                 newTestCaseData.get(caseName).get("backend").get(backend) + "\n");
+                                htmlStream.write(space + "          </td>\n");
+                            }
                         }
                     }
+
+                    htmlStream.write(space + "    </tr>\n");
                 }
             }
 
-            htmlStream.write(space + "      </tbody>\n");
-            htmlStream.write(space + "    </table>\n");
-            htmlStream.write(space + "  </div>\n");
-            htmlStream.write(space + "</div>\n");
+            htmlStream.write(space + "  </tbody>\n");
+            htmlStream.write(space + "</table>\n");
 
             htmlStream.write(space + "<hr />\n");
         }
@@ -870,6 +885,7 @@ var matchFlag = null;
             }
         }
 
+        createHtmlBodyContainerNewTestCase(space + "    ");
         createHtmlBodyContainerResultBoxTableTotal(space + "    ");
 
         htmlStream.write(space + "  </div>\n");
@@ -888,7 +904,6 @@ var matchFlag = null;
 
         createHtmlBodyContainerVersion(space + "  ");
         createHtmlBodyContainerCrash(space + "  ");
-        createHtmlBodyContainerNewTestCase(space + "  ");
         createHtmlBodyContainerSuggest(space + "  ");
         createHtmlBodyContainerResult(space + "  ");
 
