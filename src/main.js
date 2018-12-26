@@ -19,19 +19,19 @@ var htmlStream = fs.createWriteStream(htmlPath, {flags: "a"});
 
 var remoteURL, driver, backendModel, chromeOption, command, androidSN, adbPath, htmlPath;
 var backendModels = [
-    "Mac-WASM",
-    "Mac-WebGL",
     "Mac-MPS",
     "Mac-BNNS",
+    "Mac-WASM",
+    "Mac-WebGL",
+    "Android-NNAPI",
     "Android-WASM",
     "Android-WebGL",
-    "Android-NNAPI",
+    "Windows-clDNN",
     "Windows-WASM",
     "Windows-WebGL",
-    "Windows-clDNN",
+    "Linux-clDNN",
     "Linux-WASM",
-    "Linux-WebGL",
-    "Linux-clDNN"
+    "Linux-WebGL"
 ];
 
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
@@ -599,7 +599,7 @@ var matchFlag = null;
     .tab-menu ul li:hover {cursor: pointer;}\n\
     .tab-box div {display:none;}\n\
     .tab-box div.active {display:block;}\n\
-    .tab-box div.warnning {display:block;}\n\
+    .tab-box div div.NewTestCase {display:block;}\n\
     table {border: 1px solid #ddd; border-spacing:0;}\n\
     table tr th {border: 1px solid #000;background-color: #B0C4DE;}\n\
     table tr td {border: 1px solid #ddd}\n\
@@ -666,10 +666,9 @@ var matchFlag = null;
         if (newTestCaseData.get("caseCount") !== 0) {
             htmlStream.write(space + "<hr />\n");
 
-            htmlStream.write(space + "<div class='warnning' id='option_New'>\n");
-            htmlStream.write(space + "  <h3>Warnning:</h3>\n");
-            htmlStream.write(space + "  <p id='NewTestCaseText'>There are " + newTestCaseData.get("caseCount") +
-                             " test cases out of base line data, please double check.</p>\n");
+            htmlStream.write(space + "<div class='NewTestCase'>\n");
+            htmlStream.write(space + "  <h3>NOTE: There are " + newTestCaseData.get("caseCount") +
+                             " new test cases compared with the baseline, please double check.</h3>\n");
             htmlStream.write(space + "</div>\n");
 
             htmlStream.write(space + "<table>\n");
@@ -723,21 +722,24 @@ var matchFlag = null;
     }
 
     var createHtmlBodyContainerSuggest = function(space) {
-        for (let i = 0; i < testBackends.length; i++) {
-            numberPasstoFail = numberPasstoFail + pageData.get(testBackends[i]).get("pass2fail").length;
-            numberFailtoPass = numberFailtoPass + pageData.get(testBackends[i]).get("fail2pass").length;
-
-            if (typeof pageDataTotal.get(testBackends[i]).get("grasp")[0] !== "undefined") {
-                numberTotal = numberTotal + pageDataTotal.get(testBackends[i]).get("grasp")[0];
-            }
-        }
-
         htmlStream.write(space + "<div>\n");
+        htmlStream.write(space + "  <h3>PR Submission Proposal:</h3>\n");
 
-        if (numberPasstoFail == 0 && crashData.length == 0) {
-            htmlStream.write(space + "  <h3>PR Submission Proposal: <span class='suggest'>OK</span></h3>\n");
-        } else {
-            htmlStream.write(space + "  <h3>PR Submission Proposal: <span class='notsuggest'>Please improve your code</span></h3>\n");
+        for (let testBackend of testBackends) {
+            numberPasstoFail = numberPasstoFail + pageData.get(testBackend).get("pass2fail").length;
+            numberFailtoPass = numberFailtoPass + pageData.get(testBackend).get("fail2pass").length;
+
+            if (typeof pageDataTotal.get(testBackend).get("grasp")[0] !== "undefined") {
+                numberTotal = numberTotal + pageDataTotal.get(testBackend).get("grasp")[0];
+            }
+
+            if (pageData.get(testBackend).get("pass2fail").length !== 0) {
+                htmlStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + testBackend +
+                                 ": <span class='notsuggest'>Please improve the code</span></h4>\n");
+            } else {
+                htmlStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + testBackend +
+                                 ": <span class='suggest'>OK</span></h4>\n");
+            }
         }
 
         htmlStream.write(space + "  <h3>PR Submission Message:</h3>\n");
@@ -885,8 +887,8 @@ var matchFlag = null;
             }
         }
 
-        createHtmlBodyContainerNewTestCase(space + "    ");
         createHtmlBodyContainerResultBoxTableTotal(space + "    ");
+        createHtmlBodyContainerNewTestCase(space + "    ");
 
         htmlStream.write(space + "  </div>\n");
         htmlStream.write(space + "</div>\n");
