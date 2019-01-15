@@ -812,17 +812,26 @@ var matchFlag = null;
         htmlStream.write(space + "  </thead>\n");
         htmlStream.write(space + "  <tbody>\n");
 
+        let keyArray = new Array();
+        for (let baseLinekey of baseLineData.keys()) {
+            for (let i = 0; i < pageData.get(backend).get(key).length; i++) {
+                if (baseLinekey == (pageData.get(backend).get(key)[i][0] + "-" + pageData.get(backend).get(key)[i][1])) {
+                    keyArray.push([pageData.get(backend).get(key)[i][0], pageData.get(backend).get(key)[i][1]]);
+                }
+            }
+        }
+
         if (pageData.get(backend).get(key).length == 0) {
             htmlStream.write(space + "    <tr>\n");
             htmlStream.write(space + "      <td colspan='4'>None changed\n");
             htmlStream.write(space + "      </td>\n");
             htmlStream.write(space + "    </tr>\n");
         } else {
-            for (let i = 0; i < pageData.get(backend).get(key).length; i++) {
+            for (let i = 0; i < keyArray.length; i++) {
                 htmlStream.write(space + "      <tr>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get(key)[i][0] + "\n");
+                htmlStream.write(space + "        <td >" + keyArray[i][0] + "\n");
                 htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get(key)[i][1] + "\n");
+                htmlStream.write(space + "        <td >" + keyArray[i][1] + "\n");
                 htmlStream.write(space + "        </td>\n");
                 htmlStream.write(space + "        <td class='pass'>Pass\n");
                 htmlStream.write(space + "        </td>\n");
