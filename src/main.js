@@ -32,9 +32,11 @@ var backendModels = [
     "Android-WASM",
     "Android-WebGL",
     "Windows-clDNN",
+    "Windows-MKLDNN",
     "Windows-WASM",
     "Windows-WebGL",
     "Linux-clDNN",
+    "Linux-MKLDNN",
     "Linux-WASM",
     "Linux-WebGL"
 ];
@@ -61,9 +63,11 @@ var versionPolyfill = baselinejson.Version.polyfill;
  *         "Android-WASM": value,
  *         "Android-WebGL": value,
  *         "Windows-clDNN": value,
+ *         "Windows-MKLDNN": value,
  *         "Windows-WASM": value,
  *         "Windows-WebGL": value,
  *         "Linux-clDNN": value,
+ *         "Linux-MKLDNN": value,
  *         "Linux-WASM": value,
  *         "Linux-WebGL": value
  *     }
@@ -155,11 +159,13 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Android-WASM", data[8]],
             ["Android-WebGL", data[9]],
             ["Windows-clDNN", data[10]],
-            ["Windows-WASM", data[11]],
-            ["Windows-WebGL", data[12]],
-            ["Linux-clDNN", data[13]],
-            ["Linux-WASM", data[14]],
-            ["Linux-WebGL", data[15]]
+            ["Windows-MKLDNN", data[11]],
+            ["Windows-WASM", data[12]],
+            ["Windows-WebGL", data[13]],
+            ["Linux-clDNN", data[14]],
+            ["Linux-MKLDNN", data[15]],
+            ["Linux-WASM", data[16]],
+            ["Linux-WebGL", data[17]]
         ]
     ));
 
@@ -184,11 +190,13 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Android-WASM", data[8]],
             ["Android-WebGL", data[9]],
             ["Windows-clDNN", data[10]],
-            ["Windows-WASM", data[11]],
-            ["Windows-WebGL", data[12]],
-            ["Linux-clDNN", data[13]],
-            ["Linux-WASM", data[14]],
-            ["Linux-WebGL", data[15]]
+            ["Windows-MKLDNN", data[11]],
+            ["Windows-WASM", data[12]],
+            ["Windows-WebGL", data[13]],
+            ["Linux-clDNN", data[14]],
+            ["Linux-MKLDNN", data[15]],
+            ["Linux-WASM", data[16]],
+            ["Linux-WebGL", data[17]]
         ]
     ));
 
@@ -1094,7 +1102,16 @@ var matchFlag = null;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")
-                    .addArguments("--no-sandbox");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Windows-MKLDNN") {
+            if (testPlatform === "Windows") {
+                testBackends.push("Windows-MKLDNN");
+                remoteURL = remoteURL + "?backend=mkldnn";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML")
             } else {
                 continue;
             }
@@ -1122,6 +1139,17 @@ var matchFlag = null;
             if (testPlatform === "Linux") {
                 testBackends.push("Linux-clDNN");
                 remoteURL = remoteURL + "?backend=cldnn";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML")
+                    .addArguments("--no-sandbox");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Linux-MKLDNN") {
+            if (testPlatform === "Linux") {
+                testBackends.push("Linux-MKLDNN");
+                remoteURL = remoteURL + "?backend=mkldnn";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")

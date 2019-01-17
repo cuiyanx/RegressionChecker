@@ -30,9 +30,11 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
     "Android-WASM": row.AWASM,
     "Android-WebGL": row.AWebGL,
     "Windows-clDNN": row.WclDNN,
+    "Windows-MKLDNN": row.WMKLDNN,
     "Windows-WASM": row.WWASM,
     "Windows-WebGL": row.WWebGL,
     "Linux-clDNN": row.LclDNN,
+    "Linux-MKLDNN": row.LMKLDNN,
     "Linux-WASM": row.LWASM,
     "Linux-WebGL": row.LWebGL
 }});
@@ -97,6 +99,10 @@ fs.readdir(baseLineDataPath, function(err, files) {
                                 backend = "Windows-clDNN";
                                 csvRow = "WclDNN";
                                 break;
+                            case "mkldnn":
+                                backend = "Windows-MKLDNN";
+                                csvRow = "WMKLDNN";
+                                break;
                             case "wasm":
                                 backend = "Windows-WASM";
                                 csvRow = "WWASM";
@@ -112,6 +118,10 @@ fs.readdir(baseLineDataPath, function(err, files) {
                             case "cldnn":
                                 backend = "Linux-clDNN";
                                 csvRow = "LclDNN";
+                                break;
+                            case "mkldnn":
+                                backend = "Linux-MKLDNN";
+                                csvRow = "LMKLDNN";
                                 break;
                             case "wasm":
                                 backend = "Linux-WASM";
