@@ -1204,9 +1204,9 @@ var androidRootFlag = true;
             logPath = "/data/user/0/org.chromium.chrome/app_chrome/Default/debug-" + backendModel + ".log";
         } else {
             if (os.type() == "Windows_NT") {
-                logPath = debugPath + "\\debug-" + backendModel + ".log";
+                logPath = process.cwd() + "\\output\\debug\\debug-" + backendModel + ".log";
             } else {
-                logPath = debugPath + "/debug-" + backendModel + ".log";
+                logPath = process.cwd() + "/output/debug/debug-" + backendModel + ".log";
             }
         }
 
