@@ -1203,12 +1203,16 @@ var matchFlag = null;
         let logPath;
         if (testPlatform !== "Android") {
             if (os.type() == "Windows_NT") {
-                logPath = process.cwd() + "\\output\\debug\\debug-" + backendModel + ".log";
+                logPath = process.cwd() + "\\output\\debug\\tmp";
+                chromeOption = chromeOption.addArguments("--user-data-dir=" + logPath);
+
+                if (!fs.existsSync(logPath)) {
+                    fs.mkdirSync(logPath);
+                }
             } else {
                 logPath = process.cwd() + "/output/debug/debug-" + backendModel + ".log";
+                chromeOption = chromeOption.setChromeLogFile(logPath);
             }
-
-            chromeOption = chromeOption.setChromeLogFile(logPath);
         }
 
         driver = new Builder()
@@ -1279,6 +1283,10 @@ var matchFlag = null;
                 RClog("time", "mark");
 
                 await driver.get(Path);
+            } else if (testPlatform == "Windows") {
+                let readLogFile = process.cwd() + "\\output\\debug\\tmp\\chrome_debug.log";
+                let writeLogFile = process.cwd() + "\\output\\debug\\debug-" + backendModel + ".log";
+                fs.writeFileSync(writeLogFile, fs.readFileSync(readLogFile));
             }
         }).catch(function(err) {
             RClog("debug", err);
