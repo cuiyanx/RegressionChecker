@@ -13,10 +13,12 @@ if (os.type() == "Windows_NT") {
     outputPath = ".\\output";
     debugPath = ".\\output\\debug";
     resultHTMLPath = outputPath + "\\report-check-result.html";
+    resultHTMLPathFull = "file://" + process.cwd() + "\\output\\report-check-result.html";
 } else {
     outputPath = "./output";
     debugPath = "./output/debug";
     resultHTMLPath = outputPath + "/report-check-result.html";
+    resultHTMLPathFull = "file://" + process.cwd() + "/output/report-check-result.html";
 }
 
 if (!fs.existsSync(outputPath)) {
@@ -396,7 +398,6 @@ var numberPasstoFail = 0;
 var numberFailtoPass = 0;
 var numberTotal = 0;
 var matchFlag = null;
-var androidRootFlag = true;
 
 (async function() {
     RClog("console", "checking chromium code is start");
@@ -916,32 +917,32 @@ var androidRootFlag = true;
     var bodyContainerBoxTableLogBackend = function(space, backend) {
         resultHTMLStream.write(space + "<h3>Chromium log message for " + backend + " backend:</h3>\n");
 
-        if (androidRootFlag) {
-            resultHTMLStream.write(space + "<table class='box-table-log'><br />\n");
-            resultHTMLStream.write(space + "  <tbody>\n");
-
-            let logPath;
-            if (os.type() == "Windows_NT") {
-                logPath = debugPath + "\\debug-" + backend + ".log";
-            } else {
-                logPath = debugPath + "/debug-" + backend + ".log";
-            }
-
-            let fRead = fs.readFileSync(logPath);
-            let fReadArray = fRead.toString().split("\n");
-
-            for (let i = 1; i < fReadArray.length; i++) {
-                resultHTMLStream.write(space + "    <tr>\n");
-                resultHTMLStream.write(space + "      <td class='box-table-log-number'>" + i + "</td>\n");
-                resultHTMLStream.write(space + "      <td class='box-table-log-text'>" + fReadArray[i] + "</td>\n");
-                resultHTMLStream.write(space + "    </tr>\n");
-            }
-
-            resultHTMLStream.write(space + "  </tbody>\n");
-            resultHTMLStream.write(space + "</table><br /><br />\n");
-        } else {
-            resultHTMLStream.write(space + "<h3>Required rooting the android device to get chromium log message.</h3>\n");
+        if (testPlatform == "Android") {
+            resultHTMLStream.write(space + "<h3>NOTE: This is test case logs, not chromium runtime logs, because 'Permission denied'.</h3>\n");
         }
+
+        resultHTMLStream.write(space + "<table class='box-table-log'><br />\n");
+        resultHTMLStream.write(space + "  <tbody>\n");
+
+        let logPath;
+        if (os.type() == "Windows_NT") {
+            logPath = debugPath + "\\debug-" + backend + ".log";
+        } else {
+            logPath = debugPath + "/debug-" + backend + ".log";
+        }
+
+        let fRead = fs.readFileSync(logPath);
+        let fReadArray = fRead.toString().split("\n");
+
+        for (let i = 1; i < fReadArray.length; i++) {
+            resultHTMLStream.write(space + "    <tr>\n");
+            resultHTMLStream.write(space + "      <td class='box-table-log-number'>" + i + "</td>\n");
+            resultHTMLStream.write(space + "      <td class='box-table-log-text'>" + fReadArray[i] + "</td>\n");
+            resultHTMLStream.write(space + "    </tr>\n");
+        }
+
+        resultHTMLStream.write(space + "  </tbody>\n");
+        resultHTMLStream.write(space + "</table><br /><br />\n");
     }
 
     var bodyContainerBoxTable =  function(space) {
@@ -1200,17 +1201,16 @@ var androidRootFlag = true;
         }
 
         let logPath;
-        if (testPlatform == "Android") {
-            logPath = "/data/user/0/org.chromium.chrome/app_chrome/Default/debug-" + backendModel + ".log";
-        } else {
+        if (testPlatform !== "Android") {
             if (os.type() == "Windows_NT") {
                 logPath = process.cwd() + "\\output\\debug\\debug-" + backendModel + ".log";
             } else {
                 logPath = process.cwd() + "/output/debug/debug-" + backendModel + ".log";
             }
+
+            chromeOption = chromeOption.setChromeLogFile(logPath);
         }
 
-        chromeOption = chromeOption.addArguments("--log-path=" + logPath);
         driver = new Builder()
             .forBrowser("chrome")
             .setChromeOptions(chromeOption)
@@ -1239,17 +1239,33 @@ var androidRootFlag = true;
             RClog("console", "load remote URL is completed, no crash");
 
             if (testPlatform == "Android") {
-                let Path, sourceHTMLPath;
+                let Path, sourceHTMLPath, logPath;
                 if (os.type() == "Windows_NT") {
-                    sourceHTMLPath = outputPath + "\\source-android-" + backendModel + ".html";
-                    Path = "file://" + process.cwd() + "\\output\\source-android-" + backendModel + ".html";
+                    sourceHTMLPath = outputPath + "\\source-" + backendModel + ".html";
+                    Path = "file://" + process.cwd() + "\\output\\source-" + backendModel + ".html";
+                    logPath = process.cwd() + "\\output\\debug\\debug-" + backendModel + ".log";
                 } else {
-                    sourceHTMLPath = outputPath + "/source-android-" + backendModel + ".html";
-                    Path = "file://" + process.cwd() + "/output/source-android-" + backendModel + ".html";
+                    sourceHTMLPath = outputPath + "/source-" + backendModel + ".html";
+                    Path = "file://" + process.cwd() + "/output/source-" + backendModel + ".html";
+                    logPath = process.cwd() + "/output/debug/debug-" + backendModel + ".log";
                 }
 
                 await driver.executeScript("return document.documentElement.outerHTML").then(function(html) {
+                    RClog("console", "dowload source html to " + sourceHTMLPath);
+
                     fs.createWriteStream(sourceHTMLPath, {flags: "w"}).write(html);
+                });
+
+                await driver.manage().logs().get("browser").then(function(Entrys) {
+                    if (fs.existsSync(logPath)) {
+                        fs.unlink(logPath);
+                    }
+
+                    for (let entry of Entrys) {
+                        fs.createWriteStream(logPath, {flags: "a"}).write(entry.message + "\n");
+                    }
+
+                    RClog("console", "dowload log file to " + logPath);
                 });
 
                 await driver.quit();
@@ -1307,19 +1323,6 @@ var androidRootFlag = true;
     }
 
     if (testPlatform == "Android") {
-        try {
-            for (let testBackend of testBackends) {
-                command = adbPath + " pull /data/user/0/org.chromium.chrome/app_chrome/Default/debug-" + testBackend + ".log " + debugPath;
-                execSync(command, {encoding: "UTF-8", stdio: "pipe"});
-            }
-        } catch(err) {
-            if (err.stdout.search("Permission denied") !== -1) {
-                androidRootFlag = false;
-            } else {
-                throw err;
-            }
-        }
-
         driver = new Builder()
             .forBrowser("chrome")
             .setChromeOptions(new Chrome.Options().androidPackage("org.chromium.chrome").androidDeviceSerial(androidSN))
@@ -1342,15 +1345,9 @@ var androidRootFlag = true;
         .setChromeOptions(new Chrome.Options().setChromeBinaryPath(chromiumPath))
         .build();
 
-    if (os.type() == "Windows_NT") {
-        resultHTMLPath = "file://" + process.cwd() + "\\output\\report-check-result.html";
-    } else {
-        resultHTMLPath = "file://" + process.cwd() + "/output/report-check-result.html";
-    }
-
     RClog("time", "mark");
 
-    await driver.get(resultHTMLPath);
+    await driver.get(resultHTMLPathFull);
 })().then(function() {
     RClog("console", "checking chromium code is completed");
 }).catch(function(err) {
