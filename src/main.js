@@ -805,7 +805,7 @@ var matchFlag = null;
 
         for (let backend of testBackends) {
             resultHTMLStream.write(space + "      <li id='box-menu-" + backend + "' data-info='" + backend +
-                             "' onclick='javascript:click_box_menu(this)'>log-" + backend + "</li>\n");
+                             "' onclick='javascript:click_box_menu(this)'>log-" + backend.split("-")[1] + "</li>\n");
         }
 
         resultHTMLStream.write(space + "    </ul>\n");
