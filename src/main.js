@@ -850,10 +850,19 @@ var matchFlag = null;
                 resultHTMLStream.write(space + "        </td>\n");
                 resultHTMLStream.write(space + "        <td >" + keyArray[i][1] + "\n");
                 resultHTMLStream.write(space + "        </td>\n");
-                resultHTMLStream.write(space + "        <td class='pass'>Pass\n");
-                resultHTMLStream.write(space + "        </td>\n");
-                resultHTMLStream.write(space + "        <td class='fail'>Fail\n");
-                resultHTMLStream.write(space + "        </td>\n");
+
+                if (key == "pass2fail") {
+                    resultHTMLStream.write(space + "        <td class='pass'>Pass\n");
+                    resultHTMLStream.write(space + "        </td>\n");
+                    resultHTMLStream.write(space + "        <td class='fail'>Fail\n");
+                    resultHTMLStream.write(space + "        </td>\n");
+                } else {
+                    resultHTMLStream.write(space + "        <td class='fail'>Fail\n");
+                    resultHTMLStream.write(space + "        </td>\n");
+                    resultHTMLStream.write(space + "        <td class='pass'>Pass\n");
+                    resultHTMLStream.write(space + "        </td>\n");
+                }
+
                 resultHTMLStream.write(space + "      </tr>\n");
             }
         }
