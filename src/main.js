@@ -1239,12 +1239,6 @@ var matchFlag = null;
         RClog("time", "mark");
 
         await driver.wait(async function() {
-            await driver.executeScript("return window.mochaFinish;").then(function(flag) {
-                RClog("debug", flag);
-            }).catch(function(err) {
-                throw err;
-            });
-
             return driver.executeScript("return window.mochaFinish;").catch(function(err) {
                 throw err;
             });
