@@ -20,8 +20,8 @@ This is an automation tool kit to check regression easily for developers when su
      "platform": "Mac",
      "chromiumPath": "/User/test/Downloads/Chromium.app/Contents/MacOS/Chromium",
      "isUseIE": false,
-     "webmlPolyfill": false,
-     "webmlnn": true
+     "webmlPolyfill": true,
+     "webnn": true
    }
 ```
    or
@@ -31,7 +31,7 @@ This is an automation tool kit to check regression easily for developers when su
      "chromiumPath": "C:\\test\\win_x64_SUCCEED\\Chrome-bin\\chrome.exe",
      "isUseIE": false,
      "webmlPolyfill": true,
-     "webmlnn": true
+     "webnn": true
    }
 ```
    You need modify these two fields for the different platforms:
@@ -39,7 +39,7 @@ This is an automation tool kit to check regression easily for developers when su
    + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
    + **isUseIE**: `{boolean}`, **Linux**: use inference engine with **MKLDNN** backend, support **true** and **false**.
    + **webmlPolyfill**: `{boolean}`, run RegressionChecker tool with **webmlPolyfill** backends, support **true** and **false**.
-   + **webmlnn**: `{boolean}`, run RegressionChecker tool with **webmlnn** backends, support **true** and **false**.
+   + **webnn**: `{boolean}`, run RegressionChecker tool with **webnn** backends, support **true** and **false**.
 
 ## Run Tests
 
