@@ -37,9 +37,9 @@ This is an automation tool kit to check regression easily for developers when su
    You need modify these two fields for the different platforms:
    + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
    + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
-   + **isUseIE**: `{boolean}`, **Linux**: use inference engine with **MKLDNN** backend, support **true** and **false**.
-   + **webmlPolyfill**: `{boolean}`, run RegressionChecker tool with **webmlPolyfill** backends, support **true** and **false**.
-   + **webnn**: `{boolean}`, run RegressionChecker tool with **webnn** backends, support **true** and **false**.
+   + **_isUseIE_**: `{boolean}`, **Linux**: use inference engine with **MKLDNN** backend, support **true** and **false**.
+   + **_webmlPolyfill_**: `{boolean}`, run RegressionChecker tool with **webmlPolyfill** backends, support **true** and **false**.
+   + **_webnn_**: `{boolean}`, run RegressionChecker tool with **webnn** backends, support **true** and **false**.
 
 ## Run Tests
 
