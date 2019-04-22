@@ -33,22 +33,29 @@ var resultHTMLStream = fs.createWriteStream(resultHTMLPath, {flags: "a"});
 
 var remoteURL, driver, backendModel, chromeOption, command, androidSN, adbPath;
 var backendModels = [
-    "Mac-MPS",
-    "Mac-BNNS",
-    "Mac-WASM",
-    "Mac-WebGL",
-    "Android-NNAPI",
-    "Android-WASM",
-    "Android-WebGL",
-    "Windows-clDNN",
-    "Windows-MKLDNN",
-    "Windows-WASM",
-    "Windows-WebGL",
-    "Linux-clDNN",
-    "Linux-IE-MKLDNN",
-    "Linux-MKLDNN",
-    "Linux-WASM",
-    "Linux-WebGL"
+    "macOS-Polyfill-Fast-WASM",
+    "macOS-Polyfill-Sustained-WebGL",
+    "macOS-WebNN-Fast-BNNS",
+    "macOS-WebNN-Fast-MKLDNN",
+    "macOS-WebNN-Sustained-MPS",
+    "Android-Polyfill-Fast-WASM",
+    "Android-Polyfill-Sustained-WebGL",
+//    "Android-WebNN-Fast-NNAPI",
+    "Android-WebNN-Sustained-NNAPI",
+//    "Android-WebNN-Low-NNAPI",
+    "Win-Polyfill-Fast-WASM",
+    "Win-Polyfill-Sustained-WebGL",
+    "Win-WebNN-Fast-MKLDNN",
+    "Win-WebNN-Sustained-DML",
+    "Win-WebNN-Sustained-clDNN",
+    "Win-WebNN-Low-DML",
+    "Linux-Polyfill-Fast-WASM",
+    "Linux-Polyfill-Sustained-WebGL",
+    "Linux-WebNN-Fast-MKLDNN",
+    "Linux-WebNN-Sustained-clDNN",
+    "Linux-WebNN-Fast-IE-MKLDNN",
+    "Linux-WebNN-Sustained-IE-clDNN",
+    "Linux-WebNN-Low-IE-MYRIAD"
 ];
 
 function jsonTypeCheck (json, field, expectType) {
@@ -59,7 +66,7 @@ function jsonTypeCheck (json, field, expectType) {
     }
 }
 
-var testPlatform, chromiumPath, isUseIE, webmlPolyfill, webnn;
+var testPlatform, chromiumPath, preferSwitch, webmlPolyfill, webnn;
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
 if (jsonTypeCheck(RCjson, "platform", "string")) {
     testPlatform = RCjson.platform;
@@ -69,8 +76,8 @@ if (jsonTypeCheck(RCjson, "chromiumPath", "string")) {
     chromiumPath = RCjson.chromiumPath;
 }
 
-if (jsonTypeCheck(RCjson, "isUseIE", "boolean")) {
-    isUseIE = RCjson.isUseIE;
+if (jsonTypeCheck(RCjson, "preferSwitch", "boolean")) {
+    preferSwitch = RCjson.preferSwitch;
 }
 
 if (jsonTypeCheck(RCjson, "webmlPolyfill", "boolean")) {
@@ -91,22 +98,29 @@ var versionPolyfill = baselinejson.Version.polyfill;
  *         "Feature": value,
  *         "CaseId": value,
  *         "TestCase": value,
- *         "Mac-MPS": value,
- *         "Mac-BNNS": value,
- *         "Mac-WASM": value,
- *         "Mac-WebGL": value,
- *         "Android-NNAPI": value,
- *         "Android-WASM": value,
- *         "Android-WebGL": value,
- *         "Windows-clDNN": value,
- *         "Windows-MKLDNN": value,
- *         "Windows-WASM": value,
- *         "Windows-WebGL": value,
- *         "Linux-clDNN": value,
- *         "Linux-IE-MKLDNN": value,
- *         "Linux-MKLDNN": value,
- *         "Linux-WASM": value,
- *         "Linux-WebGL": value
+ *         "macOS-Polyfill-Fast-WASM": value,
+ *         "macOS-Polyfill-Sustained-WebGL": value,
+ *         "macOS-WebNN-Fast-BNNS": value,
+ *         "macOS-WebNN-Fast-MKLDNN": value,
+ *         "macOS-WebNN-Sustained-MPS": value,
+ *         "Android-Polyfill-Fast-WASM": value,
+ *         "Android-Polyfill-Sustained-WebGL": value,
+ *         "Android-WebNN-Fast-NNAPI": value,
+ *         "Android-WebNN-Sustained-NNAPI": value,
+ *         "Android-WebNN-Low-NNAPI": value,
+ *         "Win-Polyfill-Fast-WASM": value,
+ *         "Win-Polyfill-Sustained-WebGL": value,
+ *         "Win-WebNN-Fast-MKLDNN": value,
+ *         "Win-WebNN-Sustained-DML": value,
+ *         "Win-WebNN-Sustained-clDNN": value,
+ *         "Win-WebNN-Low-DML": value,
+ *         "Linux-Polyfill-Fast-WASM": value,
+ *         "Linux-Polyfill-Sustained-WebGL": value,
+ *         "Linux-WebNN-Fast-MKLDNN": value,
+ *         "Linux-WebNN-Sustained-clDNN": value,
+ *         "Linux-WebNN-Fast-IE-MKLDNN": value,
+ *         "Linux-WebNN-Sustained-IE-clDNN": value,
+ *         "Linux-WebNN-Low-IE-MYRIAD": value
  *     }
  * }
  */
@@ -129,14 +143,14 @@ var pageData = new Map();
  * }
  */
 var pageDataTotal = new Map();
-for (let i = 0; i < backendModels.length; i++) {
-    pageData.set(backendModels[i], new Map([["pass2fail", new Array()], ["fail2pass", new Array()]]));
-    pageDataTotal.set(backendModels[i], new Map([["Baseline", new Array(
-        baselinejson[backendModels[i]]["total"],
-        baselinejson[backendModels[i]]["pass"],
-        baselinejson[backendModels[i]]["fail"],
-        baselinejson[backendModels[i]]["block"],
-        Math.round((baselinejson[backendModels[i]]["pass"] / baselinejson[backendModels[i]]["total"]) * 100).toString() + "%"
+for (let backendModel of backendModels) {
+    pageData.set(backendModel, new Map([["pass2fail", new Array()], ["fail2pass", new Array()]]));
+    pageDataTotal.set(backendModel, new Map([["Baseline", new Array(
+        baselinejson[backendModel]["total"],
+        baselinejson[backendModel]["pass"],
+        baselinejson[backendModel]["fail"],
+        baselinejson[backendModel]["block"],
+        Math.round((baselinejson[backendModel]["pass"] / baselinejson[backendModel]["total"]) * 100).toString() + "%"
     )], ["grasp", new Array()]]));
 }
 
@@ -188,22 +202,27 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Feature", data[0]],
             ["CaseId", data[1]],
             ["TestCase", data[2]],
-            ["Mac-MPS", data[3]],
-            ["Mac-BNNS", data[4]],
-            ["Mac-WASM", data[5]],
-            ["Mac-WebGL", data[6]],
-            ["Android-NNAPI", data[7]],
-            ["Android-WASM", data[8]],
-            ["Android-WebGL", data[9]],
-            ["Windows-clDNN", data[10]],
-            ["Windows-MKLDNN", data[11]],
-            ["Windows-WASM", data[12]],
-            ["Windows-WebGL", data[13]],
-            ["Linux-clDNN", data[14]],
-            ["Linux-IE-MKLDNN", data[15]],
-            ["Linux-MKLDNN", data[16]],
-            ["Linux-WASM", data[17]],
-            ["Linux-WebGL", data[18]]
+            ["macOS-Polyfill-Fast-WASM", data[3]],
+            ["macOS-Polyfill-Sustained-WebGL", data[4]],
+            ["macOS-WebNN-Fast-BNNS", data[5]],
+            ["macOS-WebNN-Fast-MKLDNN", data[6]],
+            ["macOS-WebNN-Sustained-MPS", data[7]],
+            ["Android-Polyfill-Fast-WASM", data[8]],
+            ["Android-Polyfill-Sustained-WebGL", data[9]],
+            ["Android-WebNN-Sustained-NNAPI", data[10]],
+            ["Win-Polyfill-Fast-WASM", data[11]],
+            ["Win-Polyfill-Sustained-WebGL", data[12]],
+            ["Win-WebNN-Fast-MKLDNN", data[13]],
+            ["Win-WebNN-Sustained-DML", data[14]],
+            ["Win-WebNN-Sustained-clDNN", data[15]],
+            ["Win-WebNN-Low-DML", data[16]],
+            ["Linux-Polyfill-Fast-WASM", data[17]],
+            ["Linux-Polyfill-Sustained-WebGL", data[18]],
+            ["Linux-WebNN-Fast-MKLDNN", data[19]],
+            ["Linux-WebNN-Sustained-clDNN", data[20]],
+            ["Linux-WebNN-Fast-IE-MKLDNN", data[21]],
+            ["Linux-WebNN-Sustained-IE-clDNN", data[22]],
+            ["Linux-WebNN-Low-IE-MYRIAD", data[23]]
         ]
     ));
 
@@ -220,22 +239,27 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Feature", data[0]],
             ["CaseId", newData],
             ["TestCase", data[2]],
-            ["Mac-MPS", data[3]],
-            ["Mac-BNNS", data[4]],
-            ["Mac-WASM", data[5]],
-            ["Mac-WebGL", data[6]],
-            ["Android-NNAPI", data[7]],
-            ["Android-WASM", data[8]],
-            ["Android-WebGL", data[9]],
-            ["Windows-clDNN", data[10]],
-            ["Windows-MKLDNN", data[11]],
-            ["Windows-WASM", data[12]],
-            ["Windows-WebGL", data[13]],
-            ["Linux-clDNN", data[14]],
-            ["Linux-IE-MKLDNN", data[15]],
-            ["Linux-MKLDNN", data[16]],
-            ["Linux-WASM", data[17]],
-            ["Linux-WebGL", data[18]]
+            ["macOS-Polyfill-Fast-WASM", data[3]],
+            ["macOS-Polyfill-Sustained-WebGL", data[4]],
+            ["macOS-WebNN-Fast-BNNS", data[5]],
+            ["macOS-WebNN-Fast-MKLDNN", data[6]],
+            ["macOS-WebNN-Sustained-MPS", data[7]],
+            ["Android-Polyfill-Fast-WASM", data[8]],
+            ["Android-Polyfill-Sustained-WebGL", data[9]],
+            ["Android-WebNN-Sustained-NNAPI", data[10]],
+            ["Win-Polyfill-Fast-WASM", data[11]],
+            ["Win-Polyfill-Sustained-WebGL", data[12]],
+            ["Win-WebNN-Fast-MKLDNN", data[13]],
+            ["Win-WebNN-Sustained-DML", data[14]],
+            ["Win-WebNN-Sustained-clDNN", data[15]],
+            ["Win-WebNN-Low-DML", data[16]],
+            ["Linux-Polyfill-Fast-WASM", data[17]],
+            ["Linux-Polyfill-Sustained-WebGL", data[18]],
+            ["Linux-WebNN-Fast-MKLDNN", data[19]],
+            ["Linux-WebNN-Sustained-clDNN", data[20]],
+            ["Linux-WebNN-Fast-IE-MKLDNN", data[21]],
+            ["Linux-WebNN-Sustained-IE-clDNN", data[22]],
+            ["Linux-WebNN-Low-IE-MYRIAD", data[23]]
         ]
     ));
 
@@ -834,12 +858,33 @@ var matchFlag = null;
         resultHTMLStream.write(space + "    <ul>\n");
 
         for (let backend of testBackends) {
-            if (backend == "Linux-IE-MKLDNN") {
+            if (backend == "macOS-Polyfill-Fast-WASM" ||
+            backend == "macOS-Polyfill-Sustained-WebGL" ||
+            backend == "macOS-WebNN-Fast-BNNS" ||
+            backend == "macOS-WebNN-Fast-MKLDNN" ||
+            backend == "macOS-WebNN-Sustained-MPS" ||
+            backend == "Android-Polyfill-Fast-WASM" ||
+            backend == "Android-Polyfill-Sustained-WebGL" ||
+            backend == "Android-WebNN-Sustained-NNAPI" ||
+            backend == "Win-Polyfill-Fast-WASM" ||
+            backend == "Win-Polyfill-Sustained-WebGL" ||
+            backend == "Win-WebNN-Fast-MKLDNN" ||
+            backend == "Win-WebNN-Sustained-clDNN" ||
+            backend == "Linux-Polyfill-Fast-WASM" ||
+            backend == "Linux-Polyfill-Sustained-WebGL" ||
+            backend == "Linux-WebNN-Fast-MKLDNN" ||
+            backend == "Linux-WebNN-Sustained-clDNN") {
                 resultHTMLStream.write(space + "      <li id='box-menu-" + backend + "' data-info='" + backend +
-                    "' onclick='javascript:click_box_menu(this)'>log-" + backend.split("-")[1] + "-" + backend.split("-")[2] + "</li>\n");
-            } else {
+                "' onclick='javascript:click_box_menu(this)'>log-" + backend.split("-")[3] + "</li>\n");
+            } else if (backend == "Win-WebNN-Sustained-DML" ||
+            backend == "Win-WebNN-Low-DML") {
                 resultHTMLStream.write(space + "      <li id='box-menu-" + backend + "' data-info='" + backend +
-                    "' onclick='javascript:click_box_menu(this)'>log-" + backend.split("-")[1] + "</li>\n");
+                "' onclick='javascript:click_box_menu(this)'>log-" + backend.split("-")[2] + "-" + backend.split("-")[3] + "</li>\n");
+            } else if (backend == "Linux-WebNN-Fast-IE-MKLDNN" ||
+            backend == "Linux-WebNN-Sustained-IE-clDNN" ||
+            backend == "Linux-WebNN-Low-IE-MYRIAD") {
+                resultHTMLStream.write(space + "      <li id='box-menu-" + backend + "' data-info='" + backend +
+                "' onclick='javascript:click_box_menu(this)'>log-" + backend.split("-")[3] + "-" + backend.split("-")[4] + "</li>\n");
             }
         }
 
@@ -1077,60 +1122,94 @@ var matchFlag = null;
 
     RClog("time", "mark");
 
-    for (let i = 0; i < backendModels.length; i++) {
+    for (let backend of backendModels) {
         chromeOption = new Chrome.Options();
-        backendModel = backendModels[i];
+        backendModel = backend;
         graspDataSummary["total"] = 0;
         graspDataSummary["pass"] = 0;
         graspDataSummary["fail"] = 0;
         graspDataSummary["block"] = 0;
         continueFlag = false;
-        remoteURL = "https://brucedai.github.io/nt/test/index-local.html";
+        remoteURL = "https://brucedai.github.io/webnnt/test/index-local.html";
 
-        if (backendModel === "Mac-MPS") {
-            if (testPlatform === "Mac" && webnn) {
-                testBackends.push("Mac-MPS");
-                remoteURL = remoteURL + "?backend=mps";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (backendModel === "Mac-BNNS") {
-            if (testPlatform === "Mac" && webnn) {
-                testBackends.push("Mac-BNNS");
-                remoteURL = remoteURL + "?backend=bnns";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (backendModel === "Mac-WASM") {
+        // Categories filter
+        if (backendModel === "macOS-Polyfill-Fast-WASM") {
             if (testPlatform === "Mac" && webmlPolyfill) {
-                testBackends.push("Mac-WASM");
-                remoteURL = remoteURL + "?backend=wasm";
+                testBackends.push("macOS-Polyfill-Fast-WASM");
+                remoteURL = remoteURL + "?prefer=fast";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
             } else {
                 continue;
             }
-        } else if (backendModel === "Mac-WebGL") {
+        } else if (backendModel === "macOS-Polyfill-Sustained-WebGL") {
             if (testPlatform === "Mac" && webmlPolyfill) {
-                testBackends.push("Mac-WebGL");
-                remoteURL = remoteURL + "?backend=webgl";
+                testBackends.push("macOS-Polyfill-Sustained-WebGL");
+                remoteURL = remoteURL + "?prefer=sustained";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
             } else {
                 continue;
             }
-        } else if (backendModel === "Android-NNAPI") {
+        } else if (backendModel === "macOS-WebNN-Fast-BNNS") {
+            if (testPlatform === "Mac" && webnn && !preferSwitch) {
+                testBackends.push("macOS-WebNN-Fast-BNNS");
+                remoteURL = remoteURL + "?prefer=fast";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "macOS-WebNN-Fast-MKLDNN") {
+            if (testPlatform === "Mac" && webnn && preferSwitch) {
+                testBackends.push("macOS-WebNN-Fast-MKLDNN");
+                remoteURL = remoteURL + "?prefer=fast";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--use-mkldnn")
+                    .addArguments("--enable-features=WebML");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "macOS-WebNN-Sustained-MPS") {
+            if (testPlatform === "Mac" && webnn) {
+                testBackends.push("macOS-WebNN-Sustained-MPS");
+                remoteURL = remoteURL + "?prefer=sustained";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Android-Polyfill-Fast-WASM") {
+            if (testPlatform === "Android" && webmlPolyfill) {
+                testBackends.push("Android-Polyfill-Fast-WASM");
+                remoteURL = remoteURL + "?prefer=fast";
+                chromeOption = chromeOption
+                    .androidPackage("org.chromium.chrome")
+                    .addArguments("--disable-features=WebML")
+                    .androidDeviceSerial(androidSN);
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Android-Polyfill-Sustained-WebGL") {
+            if (testPlatform === "Android" && webmlPolyfill) {
+                testBackends.push("Android-Polyfill-Sustained-WebGL");
+                remoteURL = remoteURL + "?prefer=sustained";
+                chromeOption = chromeOption
+                    .androidPackage("org.chromium.chrome")
+                    .addArguments("--disable-features=WebML")
+                    .androidDeviceSerial(androidSN);
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Android-WebNN-Sustained-NNAPI") {
             if (testPlatform === "Android" && webnn) {
-                testBackends.push("Android-NNAPI");
-                remoteURL = remoteURL + "?backend=nnapi";
+                testBackends.push("Android-WebNN-Sustained-NNAPI");
+                remoteURL = remoteURL + "?prefer=sustained";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
                     .addArguments("--enable-features=WebML")
@@ -1138,72 +1217,92 @@ var matchFlag = null;
             } else {
                 continue;
             }
-        } else if (backendModel === "Android-WASM") {
-            if (testPlatform === "Android" && webmlPolyfill) {
-                testBackends.push("Android-WASM");
-                remoteURL = remoteURL + "?backend=wasm";
-                chromeOption = chromeOption
-                    .androidPackage("org.chromium.chrome")
-                    .addArguments("--disable-features=WebML")
-                    .androidDeviceSerial(androidSN);
-            } else {
-                continue;
-            }
-        } else if (backendModel === "Android-WebGL") {
-            if (testPlatform === "Android" && webmlPolyfill) {
-                testBackends.push("Android-WebGL");
-                remoteURL = remoteURL + "?backend=webgl";
-                chromeOption = chromeOption
-                    .androidPackage("org.chromium.chrome")
-                    .addArguments("--disable-features=WebML")
-                    .androidDeviceSerial(androidSN);
-            } else {
-                continue;
-            }
-        } else if (backendModel === "Windows-clDNN") {
-            if (testPlatform === "Windows" && webnn) {
-                testBackends.push("Windows-clDNN");
-                remoteURL = remoteURL + "?backend=cldnn";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML")
-            } else {
-                continue;
-            }
-        } else if (backendModel === "Windows-MKLDNN") {
-            if (testPlatform === "Windows" && webnn) {
-                testBackends.push("Windows-MKLDNN");
-                remoteURL = remoteURL + "?backend=mkldnn";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML")
-            } else {
-                continue;
-            }
-        } else if (backendModel === "Windows-WASM") {
+        } else if (backendModel === "Win-Polyfill-Fast-WASM") {
             if (testPlatform === "Windows" && webmlPolyfill) {
-                testBackends.push("Windows-WASM");
-                remoteURL = remoteURL + "?backend=wasm";
+                testBackends.push("Win-Polyfill-Fast-WASM");
+                remoteURL = remoteURL + "?prefer=fast";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--disable-features=WebML")
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Win-Polyfill-Sustained-WebGL") {
+            if (testPlatform === "Windows" && webmlPolyfill) {
+                testBackends.push("Win-Polyfill-Sustained-WebGL");
+                remoteURL = remoteURL + "?prefer=sustained";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--disable-features=WebML")
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Win-WebNN-Fast-MKLDNN") {
+            if (testPlatform === "Windows" && webnn) {
+                testBackends.push("Win-WebNN-Fast-MKLDNN");
+                remoteURL = remoteURL + "?prefer=fast";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Win-WebNN-Sustained-DML") {
+            if (testPlatform === "Windows" && webnn && preferSwitch) {
+                testBackends.push("Win-WebNN-Sustained-DML");
+                remoteURL = remoteURL + "?prefer=sustained";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--use-dml")
+                    .addArguments("--enable-features=WebML");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Win-WebNN-Sustained-clDNN") {
+            if (testPlatform === "Windows" && webnn && !preferSwitch) {
+                testBackends.push("Win-WebNN-Sustained-clDNN");
+                remoteURL = remoteURL + "?prefer=sustained";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Win-WebNN-Low-DML") {
+            if (testPlatform === "Windows" && webnn && preferSwitch) {
+                testBackends.push("Win-WebNN-Low-DML");
+                remoteURL = remoteURL + "?prefer=low";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--use-dml")
+                    .addArguments("--enable-features=WebML");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Linux-Polyfill-Fast-WASM") {
+            if (testPlatform === "Linux" && webmlPolyfill) {
+                testBackends.push("Linux-Polyfill-Fast-WASM");
+                remoteURL = remoteURL + "?prefer=fast";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
             } else {
                 continue;
             }
-        } else if (backendModel === "Windows-WebGL") {
-            if (testPlatform === "Windows" && webmlPolyfill) {
-                testBackends.push("Windows-WebGL");
-                remoteURL = remoteURL + "?backend=webgl";
+        } else if (backendModel === "Linux-Polyfill-Sustained-WebGL") {
+            if (testPlatform === "Linux" && webmlPolyfill) {
+                testBackends.push("Linux-Polyfill-Sustained-WebGL");
+                remoteURL = remoteURL + "?prefer=sustained";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
             } else {
                 continue;
             }
-        } else if (backendModel === "Linux-clDNN") {
-            if (testPlatform === "Linux" && webnn) {
-                testBackends.push("Linux-clDNN");
-                remoteURL = remoteURL + "?backend=cldnn";
+        } else if (backendModel === "Linux-WebNN-Fast-MKLDNN") {
+            if (testPlatform === "Linux" && webnn && !preferSwitch) {
+                testBackends.push("Linux-WebNN-Fast-MKLDNN");
+                remoteURL = remoteURL + "?prefer=fast";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")
@@ -1211,22 +1310,10 @@ var matchFlag = null;
             } else {
                 continue;
             }
-        } else if (backendModel === "Linux-IE-MKLDNN") {
-            if (testPlatform === "Linux" && webnn && isUseIE) {
-                testBackends.push("Linux-IE-MKLDNN");
-                remoteURL = remoteURL + "?backend=mkldnn";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML")
-                    .addArguments("--no-sandbox")
-                    .addArguments("--use-inference-engine");
-            } else {
-                continue;
-            }
-        } else if (backendModel === "Linux-MKLDNN") {
-            if (testPlatform === "Linux" && webnn) {
-                testBackends.push("Linux-MKLDNN");
-                remoteURL = remoteURL + "?backend=mkldnn";
+        } else if (backendModel === "Linux-WebNN-Sustained-clDNN") {
+            if (testPlatform === "Linux" && webnn && !preferSwitch) {
+                testBackends.push("Linux-WebNN-Sustained-clDNN");
+                remoteURL = remoteURL + "?prefer=sustained";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")
@@ -1234,23 +1321,39 @@ var matchFlag = null;
             } else {
                 continue;
             }
-        } else if (backendModel === "Linux-WASM") {
-            if (testPlatform === "Linux" && webmlPolyfill) {
-                testBackends.push("Linux-WASM");
-                remoteURL = remoteURL + "?backend=wasm";
+        } else if (backendModel === "Linux-WebNN-Fast-IE-MKLDNN") {
+            if (testPlatform === "Linux" && webnn && preferSwitch) {
+                testBackends.push("Linux-WebNN-Fast-IE-MKLDNN");
+                remoteURL = remoteURL + "?prefer=fast";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--disable-features=WebML");
+                    .addArguments("--enable-features=WebML")
+                    .addArguments("--use-inference-engine")
+                    .addArguments("--no-sandbox");
             } else {
                 continue;
             }
-        } else if (backendModel === "Linux-WebGL") {
-            if (testPlatform === "Linux" && webmlPolyfill) {
-                testBackends.push("Linux-WebGL");
-                remoteURL = remoteURL + "?backend=webgl";
+        } else if (backendModel === "Linux-WebNN-Sustained-IE-clDNN") {
+            if (testPlatform === "Linux" && webnn && preferSwitch) {
+                testBackends.push("Linux-WebNN-Sustained-IE-clDNN");
+                remoteURL = remoteURL + "?prefer=sustained";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--disable-features=WebML");
+                    .addArguments("--enable-features=WebML")
+                    .addArguments("--use-inference-engine")
+                    .addArguments("--no-sandbox");
+            } else {
+                continue;
+            }
+        } else if (backendModel === "Linux-WebNN-Low-IE-MYRIAD") {
+            if (testPlatform === "Linux" && webnn && preferSwitch) {
+                testBackends.push("Linux-WebNN-Low-IE-MYRIAD");
+                remoteURL = remoteURL + "?prefer=low";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML")
+                    .addArguments("--use-inference-engine")
+                    .addArguments("--no-sandbox");
             } else {
                 continue;
             }
@@ -1285,6 +1388,7 @@ var matchFlag = null;
 
         RClog("time", "mark");
 
+        // Wait mocha test finished
         await driver.wait(async function() {
             return driver.executeScript("return window.mochaFinish;").catch(function(err) {
                 throw err;
@@ -1292,6 +1396,7 @@ var matchFlag = null;
         }, 200000).then(async function() {
             RClog("console", "load remote URL is completed, no crash");
 
+            // Output log file
             if (testPlatform == "Android") {
                 let Path, sourceHTMLPath, logPath;
                 if (os.type() == "Windows_NT") {
@@ -1341,6 +1446,7 @@ var matchFlag = null;
         }).catch(function(err) {
             RClog("debug", err);
 
+            // Handler: page crashed -- 1
             if (err.message.search("session deleted because of page crash") != -1) {
                 continueFlag = true;
                 crashData.push(backendModel);
@@ -1352,6 +1458,7 @@ var matchFlag = null;
 
         RClog("time", "mark");
 
+        // Handler: page crashed -- 2
         if (continueFlag) {
             await driver.sleep(2000);
             await driver.quit();
