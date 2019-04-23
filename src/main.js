@@ -1169,7 +1169,7 @@ var matchFlag = null;
                 remoteURL = remoteURL + "?prefer=fast";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--use-mkldnn-mac")
+                    .addArguments("--use-mkldnn")
                     .addArguments("--enable-features=WebML");
             } else {
                 continue;
