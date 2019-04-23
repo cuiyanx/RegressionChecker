@@ -66,7 +66,7 @@ function jsonTypeCheck (json, field, expectType) {
     }
 }
 
-var testPlatform, chromiumPath, preferSwitch, webmlPolyfill, webnn;
+var testPlatform, chromiumPath, supportSwitch, webmlPolyfill, webnn;
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
 if (jsonTypeCheck(RCjson, "platform", "string")) {
     testPlatform = RCjson.platform;
@@ -76,8 +76,8 @@ if (jsonTypeCheck(RCjson, "chromiumPath", "string")) {
     chromiumPath = RCjson.chromiumPath;
 }
 
-if (jsonTypeCheck(RCjson, "preferSwitch", "boolean")) {
-    preferSwitch = RCjson.preferSwitch;
+if (jsonTypeCheck(RCjson, "supportSwitch", "boolean")) {
+    supportSwitch = RCjson.supportSwitch;
 }
 
 if (jsonTypeCheck(RCjson, "webmlPolyfill", "boolean")) {
@@ -1154,7 +1154,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "macOS-WebNN-Fast-BNNS") {
-            if (testPlatform === "Mac" && webnn && !preferSwitch) {
+            if (testPlatform === "Mac" && webnn) {
                 testBackends.push("macOS-WebNN-Fast-BNNS");
                 remoteURL = remoteURL + "?prefer=fast";
                 chromeOption = chromeOption
@@ -1164,12 +1164,12 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "macOS-WebNN-Fast-MKLDNN") {
-            if (testPlatform === "Mac" && webnn && preferSwitch) {
+            if (testPlatform === "Mac" && webnn && supportSwitch) {
                 testBackends.push("macOS-WebNN-Fast-MKLDNN");
                 remoteURL = remoteURL + "?prefer=fast";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--use-mkldnn")
+                    .addArguments("--use-mkldnn-mac")
                     .addArguments("--enable-features=WebML");
             } else {
                 continue;
@@ -1248,7 +1248,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Win-WebNN-Sustained-DML") {
-            if (testPlatform === "Windows" && webnn && preferSwitch) {
+            if (testPlatform === "Windows" && webnn && supportSwitch) {
                 testBackends.push("Win-WebNN-Sustained-DML");
                 remoteURL = remoteURL + "?prefer=sustained";
                 chromeOption = chromeOption
@@ -1259,7 +1259,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Win-WebNN-Sustained-clDNN") {
-            if (testPlatform === "Windows" && webnn && !preferSwitch) {
+            if (testPlatform === "Windows" && webnn) {
                 testBackends.push("Win-WebNN-Sustained-clDNN");
                 remoteURL = remoteURL + "?prefer=sustained";
                 chromeOption = chromeOption
@@ -1269,7 +1269,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Win-WebNN-Low-DML") {
-            if (testPlatform === "Windows" && webnn && preferSwitch) {
+            if (testPlatform === "Windows" && webnn && supportSwitch) {
                 testBackends.push("Win-WebNN-Low-DML");
                 remoteURL = remoteURL + "?prefer=low";
                 chromeOption = chromeOption
@@ -1300,7 +1300,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-WebNN-Fast-MKLDNN") {
-            if (testPlatform === "Linux" && webnn && !preferSwitch) {
+            if (testPlatform === "Linux" && webnn) {
                 testBackends.push("Linux-WebNN-Fast-MKLDNN");
                 remoteURL = remoteURL + "?prefer=fast";
                 chromeOption = chromeOption
@@ -1311,7 +1311,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-WebNN-Sustained-clDNN") {
-            if (testPlatform === "Linux" && webnn && !preferSwitch) {
+            if (testPlatform === "Linux" && webnn) {
                 testBackends.push("Linux-WebNN-Sustained-clDNN");
                 remoteURL = remoteURL + "?prefer=sustained";
                 chromeOption = chromeOption
@@ -1322,7 +1322,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-WebNN-Fast-IE-MKLDNN") {
-            if (testPlatform === "Linux" && webnn && preferSwitch) {
+            if (testPlatform === "Linux" && webnn && supportSwitch) {
                 testBackends.push("Linux-WebNN-Fast-IE-MKLDNN");
                 remoteURL = remoteURL + "?prefer=fast";
                 chromeOption = chromeOption
@@ -1334,7 +1334,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-WebNN-Sustained-IE-clDNN") {
-            if (testPlatform === "Linux" && webnn && preferSwitch) {
+            if (testPlatform === "Linux" && webnn && supportSwitch) {
                 testBackends.push("Linux-WebNN-Sustained-IE-clDNN");
                 remoteURL = remoteURL + "?prefer=sustained";
                 chromeOption = chromeOption
@@ -1346,7 +1346,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-WebNN-Low-IE-MYRIAD") {
-            if (testPlatform === "Linux" && webnn && preferSwitch) {
+            if (testPlatform === "Linux" && webnn && supportSwitch) {
                 testBackends.push("Linux-WebNN-Low-IE-MYRIAD");
                 remoteURL = remoteURL + "?prefer=low";
                 chromeOption = chromeOption
