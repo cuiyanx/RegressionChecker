@@ -59,7 +59,7 @@ function jsonTypeCheck (json, field, expectType) {
     }
 }
 
-var testPlatform, chromiumPath, supportSwitch, webmlPolyfill, webnn;
+var testPlatform, chromiumPath, preferIEMYRIAD, supportSwitch, webmlPolyfill, webnn;
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
 if (jsonTypeCheck(RCjson, "platform", "string")) {
     testPlatform = RCjson.platform;
@@ -67,6 +67,10 @@ if (jsonTypeCheck(RCjson, "platform", "string")) {
 
 if (jsonTypeCheck(RCjson, "chromiumPath", "string")) {
     chromiumPath = RCjson.chromiumPath;
+}
+
+if (jsonTypeCheck(RCjson, "IEMYRIAD", "boolean")) {
+    preferIEMYRIAD = RCjson.IEMYRIAD;
 }
 
 if (jsonTypeCheck(RCjson, "supportSwitch", "boolean")) {
@@ -83,19 +87,22 @@ if (jsonTypeCheck(RCjson, "webnn", "boolean")) {
 
 var testPrefers = new Array();
 if (testPlatform == "Linux") {
-    if (webmlPolyfill) {
-        testPrefers.push("Linux-Polyfill-Fast-WASM");
-        testPrefers.push("Linux-Polyfill-Sustained-WebGL");
-    }
+    if (preferIEMYRIAD) {
+        testPrefers.push("Linux-WebNN-Low-IE-MYRIAD");
+    } else {
+        if (webmlPolyfill) {
+            testPrefers.push("Linux-Polyfill-Fast-WASM");
+            testPrefers.push("Linux-Polyfill-Sustained-WebGL");
+        }
 
-    if (webnn) {
-        testPrefers.push("Linux-WebNN-Fast-MKLDNN");
-        testPrefers.push("Linux-WebNN-Sustained-clDNN");
+        if (webnn) {
+            testPrefers.push("Linux-WebNN-Fast-MKLDNN");
+            testPrefers.push("Linux-WebNN-Sustained-clDNN");
 
-        if (supportSwitch) {
-            testPrefers.push("Linux-WebNN-Fast-IE-MKLDNN");
-            testPrefers.push("Linux-WebNN-Sustained-IE-clDNN");
-            testPrefers.push("Linux-WebNN-Low-IE-MYRIAD");
+            if (supportSwitch) {
+                testPrefers.push("Linux-WebNN-Fast-IE-MKLDNN");
+                testPrefers.push("Linux-WebNN-Sustained-IE-clDNN");
+            }
         }
     }
 } else if (testPlatform == "Android") {
