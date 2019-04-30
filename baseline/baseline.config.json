@@ -45,12 +45,6 @@
         "fail": 399,
         "block": 0
     },
-    "Linux-WebNN-Low-IE-MYRIAD": {
-        "total": 714,
-        "pass": 188,
-        "fail": 526,
-        "block": 0
-    },
     "Linux-WebNN-Sustained-IE-clDNN": {
         "total": 714,
         "pass": 313,
