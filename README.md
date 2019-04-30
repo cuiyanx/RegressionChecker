@@ -41,7 +41,7 @@ This is an automation tool kit to check regression easily for developers when su
    You need modify these six fields for the different platforms:
    + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
    + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
-   + **_IEMYRIAD_**: `{boolean}`, prefer `IE-MYRIAD` on **Linux**, support **true** and **false**.
+   + **_IEMYRIAD_**: `{boolean}`, support `IE-MYRIAD` on **Linux**, support **true** and **false**.
    + **_supportSwitch_**: `{boolean}`, **Mac**: `--use-mkldnn`, **Linux**: `--use-inference-engine`, **Windows**: `--use-dml`, support **true** and **false**.
    + **_webmlPolyfill_**: `{boolean}`, run RegressionChecker tool with **webmlPolyfill** backends, support **true** and **false**.
    + **_webnn_**: `{boolean}`, run RegressionChecker tool with **webnn** backends, support **true** and **false**.

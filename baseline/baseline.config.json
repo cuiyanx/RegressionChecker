@@ -1,132 +1,114 @@
 {
     "Version": {
-        "chromium": "313c1c2",
-        "polyfill": "cfa0a2f"
+        "chromium": "3acec85",
+        "polyfill": "853173e"
     },
     "Android-Polyfill-Fast-WASM": {
-        "total": 421,
-        "pass": 282,
-        "fail": 139,
+        "total": 714,
+        "pass": 459,
+        "fail": 255,
         "block": 0
     },
     "Android-Polyfill-Sustained-WebGL": {
-        "total": 421,
-        "pass": 267,
-        "fail": 154,
+        "total": 714,
+        "pass": 459,
+        "fail": 255,
         "block": 0
     },
     "Android-WebNN-Sustained-NNAPI": {
-        "total": 421,
-        "pass": 282,
-        "fail": 139,
+        "total": 714,
+        "pass": 432,
+        "fail": 282,
         "block": 0
     },
     "Linux-Polyfill-Fast-WASM": {
-        "total": 421,
-        "pass": 269,
-        "fail": 152,
+        "total": 714,
+        "pass": 459,
+        "fail": 255,
         "block": 0
     },
     "Linux-Polyfill-Sustained-WebGL": {
-        "total": 421,
-        "pass": 282,
-        "fail": 139,
+        "total": 714,
+        "pass": 459,
+        "fail": 255,
         "block": 0
     },
     "Linux-WebNN-Fast-IE-MKLDNN": {
-        "total": 421,
-        "pass": 269,
-        "fail": 152,
+        "total": 714,
+        "pass": 315,
+        "fail": 399,
         "block": 0
     },
     "Linux-WebNN-Fast-MKLDNN": {
-        "total": 421,
-        "pass": 269,
-        "fail": 152,
+        "total": 714,
+        "pass": 315,
+        "fail": 399,
         "block": 0
     },
     "Linux-WebNN-Low-IE-MYRIAD": {
-        "total": 421,
-        "pass": 269,
-        "fail": 152,
+        "total": 714,
+        "pass": 188,
+        "fail": 526,
         "block": 0
     },
     "Linux-WebNN-Sustained-IE-clDNN": {
-        "total": 421,
-        "pass": 269,
-        "fail": 152,
+        "total": 714,
+        "pass": 313,
+        "fail": 401,
         "block": 0
     },
     "Linux-WebNN-Sustained-clDNN": {
-        "total": 421,
-        "pass": 269,
-        "fail": 152,
+        "total": 714,
+        "pass": 405,
+        "fail": 309,
         "block": 0
     },
     "Win-Polyfill-Fast-WASM": {
-        "total": 421,
-        "pass": 256,
-        "fail": 165,
+        "total": 714,
+        "pass": 459,
+        "fail": 255,
         "block": 0
     },
     "Win-Polyfill-Sustained-WebGL": {
-        "total": 421,
-        "pass": 269,
-        "fail": 152,
+        "total": 714,
+        "pass": 459,
+        "fail": 255,
         "block": 0
     },
     "Win-WebNN-Fast-MKLDNN": {
-        "total": 421,
-        "pass": 282,
-        "fail": 139,
-        "block": 0
-    },
-    "Win-WebNN-Low-DML": {
-        "total": 421,
-        "pass": 269,
-        "fail": 152,
-        "block": 0
-    },
-    "Win-WebNN-Sustained-DML": {
-        "total": 421,
-        "pass": 269,
-        "fail": 152,
+        "total": 714,
+        "pass": 315,
+        "fail": 399,
         "block": 0
     },
     "Win-WebNN-Sustained-clDNN": {
-        "total": 421,
-        "pass": 256,
-        "fail": 165,
+        "total": 714,
+        "pass": 405,
+        "fail": 309,
         "block": 0
     },
     "macOS-Polyfill-Fast-WASM": {
-        "total": 421,
-        "pass": 290,
-        "fail": 131,
+        "total": 714,
+        "pass": 459,
+        "fail": 255,
         "block": 0
     },
     "macOS-Polyfill-Sustained-WebGL": {
-        "total": 421,
-        "pass": 215,
-        "fail": 206,
+        "total": 714,
+        "pass": 459,
+        "fail": 255,
         "block": 0
     },
     "macOS-WebNN-Fast-BNNS": {
-        "total": 421,
-        "pass": 254,
-        "fail": 167,
-        "block": 0
-    },
-    "macOS-WebNN-Fast-MKLDNN": {
-        "total": 421,
-        "pass": 290,
-        "fail": 131,
+        "total": 714,
+        "pass": 269,
+        "fail": 445,
         "block": 0
     },
     "macOS-WebNN-Sustained-MPS": {
-        "total": 421,
-        "pass": 290,
-        "fail": 131,
+        "total": 714,
+        "pass": 278,
+        "fail": 436,
         "block": 0
     }
 }
