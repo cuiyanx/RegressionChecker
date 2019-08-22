@@ -181,9 +181,9 @@ if (testPlatform == "Linux") {
 
 RClog("console", "prefers: " + testPrefers);
 
-var testURLs = new Array();
-testURLs.push(remoteURL);
-if (needCheckRealModelTC) testURLs.push(localServerURL);
+var testURLs = new Map();
+testURLs.set("general", remoteURL);
+if (needCheckRealModelTC) testURLs.set("realModel", localServerURL);
 
 RClog("time", "mark");
 RClog("console", "checking baseline files....");
@@ -515,7 +515,7 @@ if (testPlatform == "Android") {
 
 RClog("time", "mark");
 
-var driver, chromeOption, testPrefer, logPath, logFilePath;
+var keyWord, driver, chromeOption, testPrefer, logPath, logFilePath;
 var continueFlag = false;
 var numberPasstoFail = 0;
 var numberFailtoPass = 0;
@@ -882,9 +882,9 @@ var numberTotal = 0;
 
         let logPath;
         if (os.type() == "Windows_NT") {
-            logPath = debugPath + "\\debug-" + prefer + ".log";
+            logPath = debugPath + "\\debug-general-" + prefer + ".log";
         } else {
-            logPath = debugPath + "/debug-" + prefer + ".log";
+            logPath = debugPath + "/debug-general-" + prefer + ".log";
         }
 
         let fRead = fs.readFileSync(logPath);
@@ -1015,7 +1015,8 @@ var numberTotal = 0;
     RClog("time", "mark");
 
     for (let prefer of testPrefers) {
-        for (let testURL of testURLs) {
+        for (let [key, testURL] of testURLs.entries()) {
+            keyWord = key;
             chromeOption = new Chrome.Options();
             testPrefer = prefer;
             graspDataSummary["total"] = 0;
@@ -1232,47 +1233,23 @@ var numberTotal = 0;
             }
 
             // Set test cases log path
-            if (testPlatform !== "Android") {
+            if (testPlatform == "Android") {
                 if (os.type() == "Windows_NT") {
-                    if (needCheckRealModelTC) {
-                        logPath = process.cwd() + "\\output\\debug\\realModel-" + testPrefer;
-                        logFilePath = process.cwd() + "\\output\\debug\\debug-realModel-" + testPrefer + ".log";
-                    } else {
-                        logPath = process.cwd() + "\\output\\debug\\" + testPrefer;
-                        logFilePath = process.cwd() + "\\output\\debug\\debug-" + testPrefer + ".log";
-                    }
-                    chromeOption = chromeOption.addArguments("--user-data-dir=" + logPath);
-
-                    if (!fs.existsSync(logPath)) {
-                        fs.mkdirSync(logPath);
-                    }
+                    logPath = process.cwd() + "\\output\\debug\\" + keyWord + "-" + testPrefer;
+                    logFilePath = process.cwd() + "\\output\\debug\\debug-" + keyWord + "-" + testPrefer + ".log";
                 } else {
-                    if (needCheckRealModelTC) {
-                        logFilePath = process.cwd() + "/output/debug/debug-realModel-" + testPrefer + ".log";
-                    } else {
-                        logFilePath = process.cwd() + "/output/debug/debug-" + testPrefer + ".log";
-                    }
-                    chromeOption = chromeOption.setChromeLogFile(logFilePath);
+                    logFilePath = process.cwd() + "/output/debug/debug-" + keyWord + "-" + testPrefer + ".log";
                 }
-            } else if (testPlatform !== "Windows") {
-                if (needCheckRealModelTC) {
-                    logPath = process.cwd() + "\\output\\debug\\realModel-" + testPrefer;
-                    logFilePath = process.cwd() + "\\output\\debug\\debug-realModel-" + testPrefer + ".log";
-                } else {
-                    logPath = process.cwd() + "\\output\\debug\\" + testPrefer;
-                    logFilePath = process.cwd() + "\\output\\debug\\debug-" + testPrefer + ".log";
-                }
+            } else if (testPlatform == "Windows") {
+                logPath = process.cwd() + "\\output\\debug\\" + keyWord + "-" + testPrefer;
+                logFilePath = process.cwd() + "\\output\\debug\\debug-" + keyWord + "-" + testPrefer + ".log";
                 chromeOption = chromeOption.addArguments("--user-data-dir=" + logPath);
 
                 if (!fs.existsSync(logPath)) {
                     fs.mkdirSync(logPath);
                 }
             } else {
-                if (needCheckRealModelTC) {
-                    logFilePath = process.cwd() + "/output/debug/debug-realModel-" + testPrefer + ".log";
-                } else {
-                    logFilePath = process.cwd() + "/output/debug/debug-" + testPrefer + ".log";
-                }
+                logFilePath = process.cwd() + "/output/debug/debug-" + keyWord + "-" + testPrefer + ".log";
                 chromeOption = chromeOption.setChromeLogFile(logFilePath);
             }
 
