@@ -1339,11 +1339,18 @@ var numberTotal = 0;
 
                 graspTotal = graspPass + graspFail;
 
-                if (graspTotal == baselinejson[testPrefer]["total"]) {
+                let baselineNum;
+                if (keyWord == "realModel") {
+                    baselineNum = baselinejson[testPrefer]["realModel"]["total"];
+                } else {
+                    baselineNum = baselinejson[testPrefer]["total"];
+                }
+
+                if (graspTotal == baselineNum) {
                     matchFlag = "macth";
-                } else if (graspTotal > baselinejson[testPrefer]["total"]){
+                } else if (graspTotal > baselineNum){
                     matchFlag = "add";
-                } else if (graspTotal < baselinejson[testPrefer]["total"]) {
+                } else if (graspTotal < baselineNum) {
                     matchFlag = "delete";
                 }
 
