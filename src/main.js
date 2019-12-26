@@ -128,11 +128,11 @@ if (testPlatform == "Linux") {
         }
 
         if (webnn) {
-            testPrefers.push("Linux-WebNN-Fast-MKLDNN");
+            testPrefers.push("Linux-WebNN-Fast-DNNL");
             testPrefers.push("Linux-WebNN-Sustained-clDNN");
 
             if (supportSwitch) {
-                testPrefers.push("Linux-WebNN-Fast-IE-MKLDNN");
+                testPrefers.push("Linux-WebNN-Fast-IE-DNNL");
                 testPrefers.push("Linux-WebNN-Sustained-IE-clDNN");
             }
         }
@@ -157,9 +157,9 @@ if (testPlatform == "Linux") {
         testPrefers.push("macOS-WebNN-Sustained-MPS");
 
         if (supportSwitch) {
-            // Add process ENV
-            process.env.LD_LIBRARY_PATH = getLDLibraryPath();
-            testPrefers.push("macOS-WebNN-Fast-MKLDNN");
+            // Add process ENV: no need
+            // process.env.LD_LIBRARY_PATH = getLDLibraryPath();
+            testPrefers.push("macOS-WebNN-Fast-DNNL");
         }
     }
 } else if (testPlatform == "Windows") {
@@ -169,7 +169,7 @@ if (testPlatform == "Linux") {
     }
 
     if (webnn) {
-        testPrefers.push("Win-WebNN-Fast-MKLDNN");
+        testPrefers.push("Win-WebNN-Fast-DNNL");
         testPrefers.push("Win-WebNN-Sustained-clDNN");
 
         if (supportSwitch) {
@@ -261,7 +261,7 @@ for (let [key1, value1] of Object.entries(baselinejson)) {
  *         "macOS-Polyfill-Fast-WASM": value,
  *         "macOS-Polyfill-Sustained-WebGL": value,
  *         "macOS-WebNN-Fast-BNNS": value,
- *         "macOS-WebNN-Fast-MKLDNN": value,
+ *         "macOS-WebNN-Fast-DNNL": value,
  *         "macOS-WebNN-Sustained-MPS": value,
  *         "Android-Polyfill-Fast-WASM": value,
  *         "Android-Polyfill-Sustained-WebGL": value,
@@ -270,15 +270,15 @@ for (let [key1, value1] of Object.entries(baselinejson)) {
  *         "Android-WebNN-Low-NNAPI": value,
  *         "Win-Polyfill-Fast-WASM": value,
  *         "Win-Polyfill-Sustained-WebGL": value,
- *         "Win-WebNN-Fast-MKLDNN": value,
+ *         "Win-WebNN-Fast-DNNL": value,
  *         "Win-WebNN-Sustained-DML": value,
  *         "Win-WebNN-Sustained-clDNN": value,
  *         "Win-WebNN-Low-DML": value,
  *         "Linux-Polyfill-Fast-WASM": value,
  *         "Linux-Polyfill-Sustained-WebGL": value,
- *         "Linux-WebNN-Fast-MKLDNN": value,
+ *         "Linux-WebNN-Fast-DNNL": value,
  *         "Linux-WebNN-Sustained-clDNN": value,
- *         "Linux-WebNN-Fast-IE-MKLDNN": value,
+ *         "Linux-WebNN-Fast-IE-DNNL": value,
  *         "Linux-WebNN-Sustained-IE-clDNN": value,
  *         "Linux-WebNN-Low-IE-MYRIAD": value
  *     }
@@ -727,18 +727,18 @@ var numberTotal = 0;
             if (prefer == "macOS-Polyfill-Fast-WASM" ||
             prefer == "macOS-Polyfill-Sustained-WebGL" ||
             prefer == "macOS-WebNN-Fast-BNNS" ||
-            prefer == "macOS-WebNN-Fast-MKLDNN" ||
+            prefer == "macOS-WebNN-Fast-DNNL" ||
             prefer == "macOS-WebNN-Sustained-MPS" ||
             prefer == "Android-Polyfill-Fast-WASM" ||
             prefer == "Android-Polyfill-Sustained-WebGL" ||
             prefer == "Android-WebNN-Sustained-NNAPI" ||
             prefer == "Win-Polyfill-Fast-WASM" ||
             prefer == "Win-Polyfill-Sustained-WebGL" ||
-            prefer == "Win-WebNN-Fast-MKLDNN" ||
+            prefer == "Win-WebNN-Fast-DNNL" ||
             prefer == "Win-WebNN-Sustained-clDNN" ||
             prefer == "Linux-Polyfill-Fast-WASM" ||
             prefer == "Linux-Polyfill-Sustained-WebGL" ||
-            prefer == "Linux-WebNN-Fast-MKLDNN" ||
+            prefer == "Linux-WebNN-Fast-DNNL" ||
             prefer == "Linux-WebNN-Sustained-clDNN") {
                 resultHTMLStream.write(space + "      <li id='box-menu-" + prefer + "' data-info='" + prefer +
                 "' onclick='javascript:click_box_menu(this)'>log-" + prefer.split("-")[3] + "</li>\n");
@@ -746,7 +746,7 @@ var numberTotal = 0;
             prefer == "Win-WebNN-Low-DML") {
                 resultHTMLStream.write(space + "      <li id='box-menu-" + prefer + "' data-info='" + prefer +
                 "' onclick='javascript:click_box_menu(this)'>log-" + prefer.split("-")[2] + "-" + prefer.split("-")[3] + "</li>\n");
-            } else if (prefer == "Linux-WebNN-Fast-IE-MKLDNN" ||
+            } else if (prefer == "Linux-WebNN-Fast-IE-DNNL" ||
             prefer == "Linux-WebNN-Sustained-IE-clDNN" ||
             prefer == "Linux-WebNN-Low-IE-MYRIAD") {
                 resultHTMLStream.write(space + "      <li id='box-menu-" + prefer + "' data-info='" + prefer +
@@ -1053,12 +1053,12 @@ var numberTotal = 0;
                 } else {
                     continue;
                 }
-            } else if (testPrefer === "macOS-WebNN-Fast-MKLDNN") {
+            } else if (testPrefer === "macOS-WebNN-Fast-DNNL") {
                 if (testPlatform === "Mac" && webnn && supportSwitch) {
                     testURL = testURL + "?prefer=fast";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
-                        .addArguments("--use-mkldnn")
+                        .addArguments("--use-DNNL")
                         .addArguments("--no-sandbox")
                         .addArguments("--enable-features=WebML");
                 } else {
@@ -1108,6 +1108,7 @@ var numberTotal = 0;
                     testURL = testURL + "?prefer=fast";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--no-sandbox")
                         .addArguments("--disable-features=WebML")
                 } else {
                     continue;
@@ -1117,15 +1118,17 @@ var numberTotal = 0;
                     testURL = testURL + "?prefer=sustained";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--no-sandbox")
                         .addArguments("--disable-features=WebML")
                 } else {
                     continue;
                 }
-            } else if (testPrefer === "Win-WebNN-Fast-MKLDNN") {
+            } else if (testPrefer === "Win-WebNN-Fast-DNNL") {
                 if (testPlatform === "Windows" && webnn) {
                     testURL = testURL + "?prefer=fast";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--no-sandbox")
                         .addArguments("--enable-features=WebML");
                 } else {
                     continue;
@@ -1135,6 +1138,7 @@ var numberTotal = 0;
                     testURL = testURL + "?prefer=sustained";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--no-sandbox")
                         .addArguments("--use-dml")
                         .addArguments("--enable-features=WebML");
                 } else {
@@ -1145,6 +1149,7 @@ var numberTotal = 0;
                     testURL = testURL + "?prefer=sustained";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--no-sandbox")
                         .addArguments("--enable-features=WebML");
                 } else {
                     continue;
@@ -1154,6 +1159,7 @@ var numberTotal = 0;
                     testURL = testURL + "?prefer=low";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--no-sandbox")
                         .addArguments("--use-dml")
                         .addArguments("--enable-features=WebML");
                 } else {
@@ -1177,7 +1183,7 @@ var numberTotal = 0;
                 } else {
                     continue;
                 }
-            } else if (testPrefer === "Linux-WebNN-Fast-MKLDNN") {
+            } else if (testPrefer === "Linux-WebNN-Fast-DNNL") {
                 if (testPlatform === "Linux" && webnn) {
                     testURL = testURL + "?prefer=fast";
                     chromeOption = chromeOption
@@ -1197,7 +1203,7 @@ var numberTotal = 0;
                 } else {
                     continue;
                 }
-            } else if (testPrefer === "Linux-WebNN-Fast-IE-MKLDNN") {
+            } else if (testPrefer === "Linux-WebNN-Fast-IE-DNNL") {
                 if (testPlatform === "Linux" && webnn && supportSwitch) {
                     testURL = testURL + "?prefer=fast";
                     chromeOption = chromeOption
