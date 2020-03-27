@@ -1,6 +1,6 @@
 {
   "name": "RegressionChecker",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Test tool for checking regression when submitting Web ML PR.",
   "main": "./src/main.js",
   "scripts": {
