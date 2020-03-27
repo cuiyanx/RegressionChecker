@@ -1352,7 +1352,7 @@ var argumentsArray = new Array();
                     continue;
                 }
             } else if (testPrefer === "Linux-WebNN-Low-IE-MYRIAD") {
-                if (testPlatform === "Linux" && webnn && preferSwitch.linux.IEMYRIAD) {
+                if (testPlatform === "Linux" && webnn && preferSwitch.linux.INFERENCE_ENGINE) {
                     testURL = testURL + "?prefer=low";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
